@@ -55,7 +55,7 @@ router.post('/signin', async (req, res) => {
             expiresIn: '1h',
         });
 
-        res.status(200).json({ message: 'User signed in successfully', token });
+        res.status(200).json({ message: 'User signed in successfully', token, name: user.name });
     } catch (error) {
         console.error('Server error:', error);
         res.status(500).json({ message: 'Server error', error });
