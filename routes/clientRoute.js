@@ -1,8 +1,8 @@
-// routes/userRoutes.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User.js');
+const Employee = require('../models/Employee.js');
 
 const router = express.Router();
 
@@ -41,7 +41,14 @@ router.post('/signin', async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email });
+        let userType = 'Client';
+
+        if (!user) {
+            user = await Employee.findOne({ email });
+            userType = user ? 'Employee' : null;
+        }
+
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
@@ -51,16 +58,22 @@ router.post('/signin', async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ id: user._id, type: userType }, process.env.JWT_SECRET, {
             expiresIn: '1h',
         });
 
-        res.status(200).json({ message: 'User signed in successfully', token, name: user.name });
+        res.status(200).json({ 
+            message: 'User signed in successfully', 
+            token, 
+            name: user.name, 
+            type: userType 
+        });
     } catch (error) {
         console.error('Server error:', error);
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
 
 // Client data
 router.get('/clients', async (req, res) => {
