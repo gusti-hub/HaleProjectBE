@@ -5,8 +5,8 @@ const connectDB = require('./config/db');
 require('dotenv').config();
 
 const clientRoutes = require('./routes/clientRoute');
-
-const employeeRoute = require('./routes/employeeRoute');
+const employeeRoutes = require('./routes/employeeRoute');
+const salesRoutes = require('./routes/salesRoute');
 
 const PORT = process.env.PORT || 5000;
 
@@ -22,8 +22,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api', clientRoutes);
-
-app.use('/api', employeeRoute);
+app.use('/api', employeeRoutes);
+app.use('/api', salesRoutes);
 
 app.get('/api/roleOptions', (req, res) => {
     const options = [

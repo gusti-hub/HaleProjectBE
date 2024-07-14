@@ -131,4 +131,15 @@ router.delete('/clients/:id', async (req, res) => {
     }
 });
 
+//get client_names
+router.get('/getclientnames', async (req, res) => {
+    try {
+        const clients = await User.find({}, 'name');
+        res.status(200).json(clients);
+    } catch (error) {
+        console.error('Error fetching employees:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;
