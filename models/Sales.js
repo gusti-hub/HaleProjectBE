@@ -21,7 +21,23 @@ const salesSchema = new mongoose.Schema({
     type: String,
     default: "Not Started"
   },
+  invitedUsers: {
+    type: [String],
+    default: []
+  },
+  budget: {
+    type: Number,
+    default: 0,
+    min: 0 
+  }
 }, { timestamps: true });
+
+salesSchema.pre('save', function(next) {
+  if (this.invitedUsers.length === 0) {
+    this.invitedUsers.push(this.owner);
+  }
+  next();
+});
 
 const Sales = mongoose.model('Sales', salesSchema);
 

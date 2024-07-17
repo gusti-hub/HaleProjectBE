@@ -21,6 +21,30 @@ router.post('/productreg', async (req, res) => {
     }
 });
 
+//update sales data
+router.put('/project/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, desc, client, budget } = req.body;
+
+    try {
+        const prj = await Sales.findById(id);
+        if (!prj) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        prj.name = name || prj.name;
+        prj.desc = desc || prj.desc;
+        prj.client = client || prj.client;
+        prj.budget = budget || prj.budget;
+
+        await prj.save();
+
+        res.status(200).json({ message: 'Project details updated successfully', prj });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
 //all sales data
 router.get('/sales', async (req, res) => {
     try {
@@ -46,8 +70,7 @@ router.get('/project/:id', async (req, res) => {
     }
 });
 
-//update 
-
+//update progress
 router.put('/setprogress/:_id', async (req, res) => {
     const { _id } = req.params;
     const { progress } = req.body;
@@ -69,6 +92,30 @@ router.put('/setprogress/:_id', async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
+//update invited user
+router.put('/addinviteduser/:_id', async (req, res) => {
+    const { _id } = req.params;
+    const { name } = req.body;
+  
+    try {
+      const prj = await Sales.findById(_id);
+      if (!prj) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+  
+      if (!prj.invitedUsers.includes(name)) {
+        prj.invitedUsers.push(name);
+      }
+  
+      await prj.save();
+  
+      res.status(200).json({ message: 'Invited user added successfully', prj });
+    } catch (error) {
+      console.error('Error adding invited user:', error);
+      res.status(500).json({ message: 'Server error', error });
+    }
+  });
 
 
 module.exports = router;
