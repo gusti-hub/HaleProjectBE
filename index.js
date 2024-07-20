@@ -7,6 +7,8 @@ require('dotenv').config();
 const clientRoutes = require('./routes/clientRoute');
 const employeeRoutes = require('./routes/employeeRoute');
 const salesRoutes = require('./routes/salesRoute');
+const commentsRoutes = require('./routes/commentsRoute');
+const productsRoutes = require('./routes/productRoute');
 
 const PORT = process.env.PORT || 5000;
 
@@ -24,6 +26,8 @@ app.get('/', (req, res) => {
 app.use('/api', clientRoutes);
 app.use('/api', employeeRoutes);
 app.use('/api', salesRoutes);
+app.use('/api', commentsRoutes);
+app.use('/api', productsRoutes);
 
 app.get('/api/roleOptions', (req, res) => {
     const options = [
