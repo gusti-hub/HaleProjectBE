@@ -76,17 +76,17 @@ router.put('/setprogress/:_id', async (req, res) => {
     const { progress } = req.body;
 
     try {
-        const pdt = await Sales.findById(_id);
+        const prj = await Sales.findById(_id);
 
-        if (!pdt) {
+        if (!prj) {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        pdt.progress = progress || pdt.progress;
+        prj.progress = progress || prj.progress;
 
-        await pdt.save();
+        await prj.save();
 
-        res.status(200).json({ message: 'Status updated successfully', project: pdt });
+        res.status(200).json({ message: 'Status updated successfully', project: prj });
     } catch (error) {
         console.error('Error updating status:', error);
         res.status(500).json({ message: 'Server error', error });
@@ -97,25 +97,68 @@ router.put('/setprogress/:_id', async (req, res) => {
 router.put('/addinviteduser/:_id', async (req, res) => {
     const { _id } = req.params;
     const { name } = req.body;
-  
+
     try {
-      const prj = await Sales.findById(_id);
-      if (!prj) {
-        return res.status(404).json({ message: 'Project not found' });
-      }
-  
-      if (!prj.invitedUsers.includes(name)) {
-        prj.invitedUsers.push(name);
-      }
-  
-      await prj.save();
-  
-      res.status(200).json({ message: 'Invited user added successfully', prj });
+        const prj = await Sales.findById(_id);
+        if (!prj) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        if (!prj.invitedUsers.includes(name)) {
+            prj.invitedUsers.push(name);
+        }
+
+        await prj.save();
+
+        res.status(200).json({ message: 'Invited user added successfully', prj });
     } catch (error) {
-      console.error('Error adding invited user:', error);
-      res.status(500).json({ message: 'Server error', error });
+        console.error('Error adding invited user:', error);
+        res.status(500).json({ message: 'Server error', error });
     }
-  });
+});
+
+router.put('/removeinviteduser/:_id', async (req, res) => {
+    const { _id } = req.params;
+    const { name } = req.body;
+
+    try {
+        const prj = await Sales.findById(_id);
+        if (!prj) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        const index = prj.invitedUsers.indexOf(name);
+        if (index !== -1) {
+            prj.invitedUsers.splice(index, 1);
+        } else {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        await prj.save();
+
+        res.status(200).json({ message: 'Invited user removed successfully', prj });
+    } catch (error) {
+        console.error('Error removing invited user:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.delete('/project/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const prj = await Sales.findById(id);
+        if (!prj) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        await Sales.deleteOne({ _id: id });
+
+        res.status(200).json({ message: 'Project deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
 
 
 module.exports = router;
