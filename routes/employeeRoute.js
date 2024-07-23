@@ -54,6 +54,13 @@ router.put('/employee/:id', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        if (email && email !== user.email) {
+            const existingUserWithEmail = await Employee.findOne({ email });
+            if (existingUserWithEmail) {
+                return res.status(400).json({ message: 'Email is already used by another user' });
+            }
+        }
+
         user.name = name || user.name;
         user.email = email || user.email;
         user.title = title || user.title;

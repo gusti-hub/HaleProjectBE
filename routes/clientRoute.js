@@ -8,22 +8,22 @@ const router = express.Router();
 
 // Client Registration
 router.post('/clientreg', async (req, res) => {
-    const { name, email, password, title } = req.body;
+    const { code, name, email, password, title, address } = req.body;
 
-    if (!name || !email || !password) {
-        return res.status(400).json({ message: 'Please provide name, email, and password' });
+    if (!name || !email || !password || !code) {
+        return res.status(400).json({ message: 'Please provide code, name, email, and password' });
     }
 
     try {
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ $or: [{ email }, { code }] });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.status(400).json({ message: 'User with this email or code already exists' });
         }
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const newUser = new User({ name, email, password: hashedPassword, title });
+        const newUser = new User({ code, name, email, password: hashedPassword, title, address });
         await newUser.save();
 
         res.status(201).json({ message: 'User registered successfully', user: newUser });
@@ -31,6 +31,7 @@ router.post('/clientreg', async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
 
 // Sign In
 router.post('/signin', async (req, res) => {
@@ -79,7 +80,7 @@ router.post('/signin', async (req, res) => {
 // Client data
 router.get('/clients', async (req, res) => {
     try {
-        const users = await User.find().select('name email title');
+        const users = await User.find();
         res.status(200).json({ users });
     } catch (error) {
         console.error('Server error:', error);
@@ -90,7 +91,7 @@ router.get('/clients', async (req, res) => {
 //Update client
 router.put('/clients/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, email, password, title } = req.body;
+    const { code, name, email, password, title, address } = req.body;
 
     try {
         const user = await User.findById(id);
@@ -98,9 +99,25 @@ router.put('/clients/:id', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        if (code && code !== user.code) {
+            const existingUserWithCode = await User.findOne({ code });
+            if (existingUserWithCode) {
+                return res.status(400).json({ message: 'Code is already used by another user' });
+            }
+        }
+
+        if (email && email !== user.email) {
+            const existingUserWithEmail = await User.findOne({ email });
+            if (existingUserWithEmail) {
+                return res.status(400).json({ message: 'Email is already used by another user' });
+            }
+        }
+
+        user.code = code || user.code;
         user.name = name || user.name;
         user.email = email || user.email;
         user.title = title || user.title;
+        user.address = address || user.address;
 
         if (password) {
             const salt = await bcrypt.genSalt(10);
@@ -114,6 +131,7 @@ router.put('/clients/:id', async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
 
 // delete client
 router.delete('/clients/:id', async (req, res) => {

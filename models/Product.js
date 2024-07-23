@@ -40,7 +40,8 @@ const productSchema = new mongoose.Schema({
         required: false,
     },
     productDetails: moreDetailsSchema,
-    comments: [commentSchema]
+    comments: [commentSchema],
+    imageUrl: { type: String }
 }, { timestamps: true });
 
 const Products = mongoose.model('Products', productSchema);

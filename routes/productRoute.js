@@ -50,10 +50,10 @@ router.get('/getsections/:projectId', async (req, res) => {
 
 router.post('/newProduct', async (req, res) => {
     try {
-        const { projectId, type, title, desc } = req.body;
+        const { projectId, type, title, desc, imageUrl } = req.body;
 
         const newProduct = new Products({
-            projectId, type, title, desc
+            projectId, type, title, desc, imageUrl
         });
 
         const product = await newProduct.save();
@@ -68,7 +68,7 @@ router.post('/newProduct', async (req, res) => {
 router.post('/newProductItem', async (req, res) => {
     const {
         projectId, type, name, desc, code, unit, len, wid, dia, color, material,
-        insert, finish, qty, vendor, budget, buyCost, sellCost
+        insert, finish, qty, vendor, budget, buyCost, sellCost, imageUrl
     } = req.body;
 
     try {
@@ -80,7 +80,8 @@ router.post('/newProductItem', async (req, res) => {
             productDetails: {
                 code, unit, len, wid, dia, color, material, insert, finish, qty, vendor,
                 budget, buyCost, sellCost
-            }
+            },
+            imageUrl
         });
 
         await newProduct.save();
@@ -131,7 +132,7 @@ router.put('/product/:projectId/:name/newComment/:_id', async (req, res) => {
 
 router.put('/product/:_id', async (req, res) => {
     const { _id } = req.params;
-    const { title, desc } = req.body;
+    const { title, desc, imageUrl } = req.body;
     try {
         const pdt = await Products.findById(_id);
 
@@ -141,6 +142,7 @@ router.put('/product/:_id', async (req, res) => {
 
         pdt.title = title || pdt.title;
         pdt.desc = desc || pdt.desc;
+        pdt.imageUrl = imageUrl || pdt.imageUrl;
 
         await pdt.save();
 
@@ -154,7 +156,7 @@ router.put('/product/:_id', async (req, res) => {
 router.put('/newProductItem/:id', async (req, res) => {
     const {
         projectId, type, name, desc, code, unit, len, wid, dia, color, material,
-        insert, finish, qty, vendor, budget, buyCost, sellCost
+        insert, finish, qty, vendor, budget, buyCost, sellCost, imageUrl
     } = req.body;
 
     try {
@@ -186,7 +188,8 @@ router.put('/newProductItem/:id', async (req, res) => {
                     budget: budget !== undefined ? budget : existingProduct.productDetails.budget,
                     buyCost: buyCost !== undefined ? buyCost : existingProduct.productDetails.buyCost,
                     sellCost: sellCost !== undefined ? sellCost : existingProduct.productDetails.sellCost
-                }
+                },
+                imageUrl: imageUrl || existingProduct.imageUrl
             },
             { new: true, runValidators: true } 
         );
