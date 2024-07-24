@@ -22,21 +22,21 @@ jobs:
       run: npm install
 
     - name: Build Docker image
-      run: docker build -t registry.digitalocean.com/your-registry/your-backend:latest .
+      run: docker build -t registry.digitalocean.com/hale-container-registry/hale-be:latest .
 
     - name: Login to DigitalOcean Container Registry
-      run: echo ${{ secrets.DOCKER_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u your-username --password-stdin
+      run: echo ${{ secrets.DOCKER_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u anggaraputra9552@gmail.com --password-stdin
 
     - name: Push Docker image to DigitalOcean Container Registry
-      run: docker push registry.digitalocean.com/your-registry/your-backend:latest
+      run: docker push registry.digitalocean.com/hale-container-registry/hale-be:latest
 
     - name: Deploy to DigitalOcean Droplet
       run: |
-        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} your-user@your-droplet-ip << 'EOF'
-          docker pull registry.digitalocean.com/your-registry/your-backend:latest
-          docker stop your-backend-container || true
-          docker rm your-backend-container || true
-          docker run -d --name your-backend-container -p 3000:3000 registry.digitalocean.com/your-registry/your-backend:latest
+        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} root@137.184.73.216 << 'EOF'
+          docker pull registry.digitalocean.com/hale-container-registry/hale-be:latest
+          docker stop hale-be-container || true
+          docker rm hale-be-container || true
+          docker run -d --name hale-be-container -p 3000:3000 registry.digitalocean.com/hale-container-registry/hale-be:latest
         EOF
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
