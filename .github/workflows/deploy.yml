@@ -31,16 +31,14 @@ jobs:
       run: docker push registry.digitalocean.com/hale-container-registry/hale-be:latest
 
     - name: Deploy to DigitalOcean Droplet
-      run: |
-        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} root@137.184.73.216 << 'EOF'
-          docker pull registry.digitalocean.com/hale-container-registry/hale-be:latest
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.DROPLET_IP }}
+        username: root
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          docker pull ${{ secrets.DOCKER_REGISTRY }}/hale-be:latest
           docker stop hale-be-container || true
           docker rm hale-be-container || true
-          docker run -d --name hale-be-container -p 5000:5000 -e MONGO_URI=${{ secrets.MONGO_URI }} registry.digitalocean.com/hale-container-registry/hale-be:latest
-        EOF
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        MONGO_URI: ${{ secrets.MONGO_URI }}
-        NODE_ENV: ${{ secrets.NODE_ENV }}
-        PORT: ${{ secrets.PORT }}
+          docker run -d --name hale-be-container -p 5000:5000 -e MONGO_URI=${{ secrets.MONGO_URI }} -e JWT_SECRET=${{ secrets.JWT_SECRET }} -e NODE_ENV=${{ secrets.NODE_ENV }} -e PORT=${{ secrets.PORT }} registry.digitalocean.com/hale-container-registry/hale-be:latest
 
