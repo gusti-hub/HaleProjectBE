@@ -36,7 +36,11 @@ jobs:
           docker pull registry.digitalocean.com/hale-container-registry/hale-be:latest
           docker stop hale-be-container || true
           docker rm hale-be-container || true
-          docker run -d --name hale-be-container -p 3000:3000 registry.digitalocean.com/hale-container-registry/hale-be:latest
+          docker run -d --name hale-be-container -p 3000:3000 -e MONGO_URI=${{ secrets.MONGO_URI }} registry.digitalocean.com/hale-container-registry/hale-be:latest
         EOF
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        NODE_ENV: ${{ secrets.NODE_ENV }}
+        PORT: ${{ secrets.PORT }}
+
