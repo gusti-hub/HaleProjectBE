@@ -41,5 +41,4 @@ jobs:
           docker stop hale-be-container || true
           docker rm hale-be-container || true
           docker run -d --name hale-be-container -p 5000:5000 -e MONGO_URI=${{ secrets.MONGO_URI }} -e JWT_SECRET=${{ secrets.JWT_SECRET }} -e NODE_ENV="production" -e PORT=5000 registry.digitalocean.com/hale-container-registry/hale-be:latest
-          #docker run -d --name hale-be-container -p 5000:5000 -e MONGO_URI="mongodb+srv://arkababi31:8L8F4w3ag8asDNxj@cluster0.y38aing.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" -e JWT_SECRET="sdfghjklqwertyuimnbvcxasdfghjpoiuytrewqasdfghjmnbvcxzaqwertyuilllkjhgfdsertyui" -e NODE_ENV="production" -e PORT=5000 registry.digitalocean.com/hale-container-registry/hale-be:latest
 
