@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User.js');
 const Employee = require('../models/Employee.js');
+const auth = require('../utils/jwtUtils.js');
 
 const router = express.Router();
 
@@ -78,7 +79,7 @@ router.post('/signin', async (req, res) => {
 
 
 // Client data
-router.get('/clients', async (req, res) => {
+router.get('/clients', auth, async (req, res) => {
     try {
         const users = await User.find();
         res.status(200).json({ users });
@@ -151,7 +152,7 @@ router.delete('/clients/:id', async (req, res) => {
 });
 
 //get client_names
-router.get('/getclientnames', async (req, res) => {
+router.get('/getclientnames', auth, async (req, res) => {
     try {
         const clients = await User.find({}, 'name');
         res.status(200).json(clients);

@@ -1,5 +1,6 @@
 const express = require('express');
 const Sales = require('../models/Sales.js');
+const auth = require('../utils/jwtUtils.js');
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ router.put('/project/:id', async (req, res) => {
 });
 
 //all sales data
-router.get('/sales', async (req, res) => {
+router.get('/sales', auth, async (req, res) => {
     try {
         const salesData = await Sales.find().select('_id name desc owner client progress createdAt');
         res.status(200).json({ salesData });
@@ -56,7 +57,7 @@ router.get('/sales', async (req, res) => {
     }
 });
 
-router.get('/project/:id', async (req, res) => {
+router.get('/project/:id', auth, async (req, res) => {
     const { id } = req.params;
 
     try {
