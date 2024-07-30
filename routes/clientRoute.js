@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User.js');
 const Employee = require('../models/Employee.js');
 const auth = require('../utils/jwtUtils.js');
+const AuthorizationRoles = require('../models/AuthorizationRoles.js');
 
 const router = express.Router();
 
@@ -45,10 +46,15 @@ router.post('/signin', async (req, res) => {
     try {
         let user = await User.findOne({ email });
         let userType = 'Client';
+        let action = '';
 
         if (!user) {
             user = await Employee.findOne({ email });
             userType = user ? 'Employee' : null;
+            if(user){
+                let actionlist = await AuthorizationRoles.find({ role_id: user.role_id}).select('action_name');
+                action = actionlist.map(action => action.action_name).join(';');
+            }
         }
 
         if (!user) {
@@ -69,7 +75,8 @@ router.post('/signin', async (req, res) => {
             token, 
             _id: user._id,
             name: user.name, 
-            type: userType 
+            type: userType,
+            action: action,
         });
     } catch (error) {
         console.error('Server error:', error);

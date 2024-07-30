@@ -10,6 +10,7 @@ const salesRoutes = require('./routes/salesRoute');
 const commentsRoutes = require('./routes/commentsRoute');
 const productsRoutes = require('./routes/productRoute');
 const vendorRoutes = require('./routes/vendorRoute');
+const roleRoutes = require('./routes/roleRoute');
 
 const uploadRoutes = require('./routes/uploadRoute');
 
@@ -34,6 +35,7 @@ app.use('/api', productsRoutes);
 app.use('/api', vendorRoutes);
 
 app.use('/api', uploadRoutes);
+app.use('/api', roleRoutes);
 
 app.get('/api/roleOptions', (req, res) => {
     const options = [
