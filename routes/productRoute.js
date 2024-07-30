@@ -1,6 +1,7 @@
 const express = require('express');
 const Products = require('../models/Product.js');
 const Sections = require('../models/Section.js');
+const auth = require('../utils/jwtUtils.js');
 
 const router = express.Router();
 
@@ -37,7 +38,7 @@ router.delete('/deleteSection/:id', async (req, res) => {
     }
 });
 
-router.get('/getsections/:projectId', async (req, res) => {
+router.get('/getsections/:projectId', auth, async (req, res) => {
     try {
         const { projectId } = req.params;
         const sectionData = await Sections.find({ projectId });
@@ -91,7 +92,7 @@ router.post('/newProductItem', async (req, res) => {
     }
 });
 
-router.get('/allProducts/:projectId', async (req, res) => {
+router.get('/allProducts/:projectId', auth, async (req, res) => {
     try {
         const { projectId } = req.params;
         const allProducts = await Products.find({ projectId });

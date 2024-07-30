@@ -1,5 +1,6 @@
 const express = require('express');
 const Vendor = require('../models/Vendor.js');
+const auth = require('../utils/jwtUtils.js');
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ router.post('/vendorreg', async (req, res) => {
     }
 });
 
-router.get('/vendors', async (req, res) => {
+router.get('/vendors', auth, async (req, res) => {
     try {
         const users = await Vendor.find();
         res.status(200).json({ users });
@@ -90,7 +91,7 @@ router.delete('/vendors/:id', async (req, res) => {
     }
 });
 
-router.get('/getvendornames', async (req, res) => {
+router.get('/getvendornames', auth, async (req, res) => {
     try {
         const vendors = await Vendor.find({}, 'name');
         res.status(200).json(vendors);

@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Employee = require('../models/Employee.js');
+const auth = require('../utils/jwtUtils.js');
 
 const router = express.Router();
 
@@ -33,7 +34,7 @@ router.post('/empreg', async (req, res) => {
 });
 
 //Employee data
-router.get('/employees', async (req, res) => {
+router.get('/employees', auth, async (req, res) => {
     try {
         const users = await Employee.find().select('name email title role');
         res.status(200).json({ users });
@@ -97,7 +98,7 @@ router.delete('/employee/:id', async (req, res) => {
 });
 
 //get employee_names
-router.get('/getemployeenames', async (req, res) => {
+router.get('/getemployeenames', auth, async (req, res) => {
     try {
         const employees = await Employee.find({}, 'name');
         res.status(200).json(employees);

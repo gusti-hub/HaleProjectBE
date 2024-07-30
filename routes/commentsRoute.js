@@ -1,5 +1,6 @@
 const express = require('express');
 const Comments = require('../models/Comment.js');
+const auth = require('../utils/jwtUtils.js');
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.post('/newComment', async (req, res) => {
     }
 });
 
-router.get('/getComments/:projectId', async (req, res) => {
+router.get('/getComments/:projectId', auth, async (req, res) => {
     try {
         const { projectId } = req.params;
         const comments = await Comments.find({ projectId });
