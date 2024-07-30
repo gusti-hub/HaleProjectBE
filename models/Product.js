@@ -41,7 +41,11 @@ const productSchema = new mongoose.Schema({
     },
     productDetails: moreDetailsSchema,
     comments: [commentSchema],
-    imageUrl: { type: String }
+    imageUrl: { type: String },
+    status: {
+        type: String,
+        default: "Pending"
+    }
 }, { timestamps: true });
 
 const Products = mongoose.model('Products', productSchema);

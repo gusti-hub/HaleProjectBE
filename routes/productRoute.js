@@ -192,7 +192,7 @@ router.put('/newProductItem/:id', async (req, res) => {
                 },
                 imageUrl: imageUrl || existingProduct.imageUrl
             },
-            { new: true, runValidators: true } 
+            { new: true, runValidators: true }
         );
 
         res.status(200).json({ message: 'Product updated successfully' });
@@ -214,6 +214,24 @@ router.delete('/product/:id', async (req, res) => {
 
         res.status(200).json({ message: 'Item deleted successfully' });
     } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+//For procurement
+router.get('/products/:secId', auth, async (req, res) => {
+    const { secId } = req.params;
+
+    try {
+        const sections = await Sections.find({ projectId: secId });
+
+        const sectionIds = sections.map(section => section._id);
+
+        const products = await Products.find({ projectId: { $in: sectionIds } });
+
+        res.status(200).json({ products });
+    } catch (error) {
+        console.error('Server error:', error);
         res.status(500).json({ message: 'Server error', error });
     }
 });
