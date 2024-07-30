@@ -7,9 +7,9 @@ const router = express.Router();
 
 // Employee Registration
 router.post('/empreg', async (req, res) => {
-    const { name, email, password, title, role } = req.body;
+    const { name, email, password, title, role_id, role_code, role_name } = req.body;
 
-    if (!name || !email || !password || !role) {
+    if (!name || !email || !password || !role_id || !role_code || !role_name) {
         return res.status(400).json({ message: 'Please provide name, email, password and role.' });
     }
 
@@ -22,7 +22,7 @@ router.post('/empreg', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const newUser = new Employee({ name, email, password: hashedPassword, title, role });
+        const newUser = new Employee({ name, email, password: hashedPassword, title, role_id, role_code, role_name });
         await newUser.save();
 
         res.status(201).json({ message: 'User registered successfully', user: newUser });
@@ -35,7 +35,7 @@ router.post('/empreg', async (req, res) => {
 //Employee data
 router.get('/employees', async (req, res) => {
     try {
-        const users = await Employee.find().select('name email title role');
+        const users = await Employee.find().select('name email title role_id role_name role_code');
         res.status(200).json({ users });
     } catch (error) {
         console.error('Server error:', error);
@@ -46,7 +46,7 @@ router.get('/employees', async (req, res) => {
 //update employee
 router.put('/employee/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, email, password, title, role } = req.body;
+    const { name, email, password, title, role_id, role_code, role_name } = req.body;
 
     try {
         const user = await Employee.findById(id);
@@ -64,7 +64,9 @@ router.put('/employee/:id', async (req, res) => {
         user.name = name || user.name;
         user.email = email || user.email;
         user.title = title || user.title;
-        user.role = role || user.role;
+        user.role_id = role_id || user.role_id;
+        user.role_code = role_code || user.role_code;
+        user.role_name = role_name || user.role_name;
 
         if (password) {
             const salt = await bcrypt.genSalt(10);
