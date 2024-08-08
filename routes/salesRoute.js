@@ -25,7 +25,7 @@ router.post('/productreg', async (req, res) => {
 //update sales data
 router.put('/project/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, desc, client, budget } = req.body;
+    const { name, desc, client, budget, imageUrl } = req.body;
 
     try {
         const prj = await Sales.findById(id);
@@ -37,6 +37,7 @@ router.put('/project/:id', async (req, res) => {
         prj.desc = desc || prj.desc;
         prj.client = client || prj.client;
         prj.budget = budget || prj.budget;
+        prj.imageUrl = imageUrl || prj.imageUrl;
 
         await prj.save();
 

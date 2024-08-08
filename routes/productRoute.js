@@ -236,4 +236,22 @@ router.get('/products/:secId', auth, async (req, res) => {
     }
 });
 
+router.put('/updateQty/:id', async (req, res) => {
+    const { id } = req.params;
+    const { qty } = req.body;
+
+    try {
+        const pdt = await Products.findById(id);
+        if (!pdt) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        pdt.productDetails.qty = qty;
+        await pdt.save();
+        res.status(200).json({ message: 'Quantity updated successfully' });
+    } catch (error) {
+        console.error('Error updating status:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
 module.exports = router;
