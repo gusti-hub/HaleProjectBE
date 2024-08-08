@@ -11,8 +11,8 @@ const commentsRoutes = require('./routes/commentsRoute');
 const productsRoutes = require('./routes/productRoute');
 const vendorRoutes = require('./routes/vendorRoute');
 const roleRoutes = require('./routes/roleRoute');
-
 const uploadRoutes = require('./routes/uploadRoute');
+const configurationRoutes = require('./routes/configurationRoute');
 
 const PORT = process.env.PORT || 5000;
 
@@ -36,6 +36,7 @@ app.use('/api', vendorRoutes);
 
 app.use('/api', uploadRoutes);
 app.use('/api', roleRoutes);
+app.use('/api', configurationRoutes);
 
 app.get('/api/roleOptions', (req, res) => {
     const options = [
