@@ -7,13 +7,14 @@ const router = express.Router();
 
 router.post('/add-rfq', async (req, res) => {
     try {
-        const { projectId, vendor, curr, deadline, products } = req.body;
+        const { rfqId, projectId, vendor, curr, deadline, products } = req.body;
 
         if (!projectId || !vendor || !curr || !deadline || !products || !Array.isArray(products)) {
             return res.status(400).json({ message: 'All fields are required and productIds must be an array' });
         }
 
         const newRFQ = new RFQs({
+            rfqId,
             projectId,
             vendor,
             curr,
@@ -29,7 +30,7 @@ router.post('/add-rfq', async (req, res) => {
         const today = new Date();
 
         const updatePromises = foundProducts.map(product => {
-            product.rfqNumber = newRFQ._id;
+            product.rfqNumber = newRFQ.rfqId;
             product.rfqSentDate = today.toISOString().split('T')[0];
             return product.save();
         });

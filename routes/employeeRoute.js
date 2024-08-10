@@ -15,7 +15,8 @@ router.post('/empreg', async (req, res) => {
     }
 
     try {
-        const existingUser = await Employee.findOne({ email });
+        const existingUser = await Employee.findOne({ $or: [{ email }, { name }] });
+        
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const rfqSchema = new mongoose.Schema({
+    rfqId: {type: String},
     projectId: {
         type: String,
         required: true,

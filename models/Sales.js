@@ -13,6 +13,10 @@ const salesSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  ownerId: {
+    type: String,
+    required: true,
+  },
   client: {
     type: String,
     required: true,
