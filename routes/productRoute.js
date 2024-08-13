@@ -245,7 +245,7 @@ router.put('/updateQty/:id', async (req, res) => {
         if (!pdt) {
             return res.status(404).json({ message: 'Product not found' });
         }
-        pdt.productDetails.qty = qty;
+        // pdt.productDetails.qty = qty;
         await pdt.save();
         res.status(200).json({ message: 'Quantity updated successfully' });
     } catch (error) {

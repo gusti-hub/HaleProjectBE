@@ -57,7 +57,7 @@ router.get('/rfqDetails/:projectId', auth, async (req, res) => {
 
 router.get('/getRFQPdts/:id', auth, async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
 
         const rfq = await RFQs.findById(id);
 
@@ -68,7 +68,7 @@ router.get('/getRFQPdts/:id', auth, async (req, res) => {
         const productIds = rfq.products.map(product => product.productId);
         const products = await Products.find({ _id: { $in: productIds } });
 
-        res.status(200).json({products: products, curr: rfq.curr, rfqPdts: rfq.products});
+        res.status(200).json({ products: products, curr: rfq.curr, rfqPdts: rfq.products });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -78,7 +78,7 @@ router.get('/getRFQPdts/:id', auth, async (req, res) => {
 router.put('/updatePdtPrice/:id', async (req, res) => {
     const { id } = req.params;
     const productPrices = req.body;
-        
+
     try {
         const rfq = await RFQs.findById(id);
 
@@ -108,6 +108,36 @@ router.put('/updatePdtPrice/:id', async (req, res) => {
         res.status(200).json({ message: 'Products updated successfully', rfq });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.get('/rfqProducts/:projectId/:rfqId', auth, async (req, res) => {
+    const { projectId, rfqId } = req.params;
+
+    try {
+        const rfq = await RFQs.findOne({ rfqId: rfqId, projectId: projectId });
+
+        if (!rfq) {
+            return res.status(404).json({ message: 'Products or RFQ not found' });
+        }
+        const productIds = rfq.products.map(product => product.productId);
+
+        const productsDetails = await Products.find({ _id: { $in: productIds } });
+
+        const response = rfq.products.map(product => {
+            const productDetail = productsDetails.find(pd => pd._id.toString() === product.productId);
+            return {
+                ...productDetail._doc,
+                qty: product.qty,
+                price: product.price,
+                curr: rfq.curr
+            };
+        });
+
+        return res.json(response);
+    } catch (error) {
+        console.error('Error fetching RFQ or products:', error);
+        return res.status(500).json({ message: 'Server error' });
     }
 });
 

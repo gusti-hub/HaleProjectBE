@@ -49,7 +49,9 @@ const productSchema = new mongoose.Schema({
     rfqNumber: {type: String},
     price: {type: Number},
     rfqSentDate: {type: String},
-    rfqReceiveDate: {type: String}
+    rfqReceiveDate: {type: String},
+    poNumber: {type: String},
+    poSentDate: {type: String},
 }, { timestamps: true });
 
 const Products = mongoose.model('Products', productSchema);
