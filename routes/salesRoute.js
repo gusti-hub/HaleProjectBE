@@ -7,10 +7,10 @@ const router = express.Router();
 // project creation
 router.post('/productreg', async (req, res) => {
     try {
-        const { name, desc, owner, client } = req.body;
+        const { name, desc, owner, ownerId, client } = req.body;
 
         const newSale = new Sales({
-            name, desc, owner, client
+            name, desc, owner, ownerId, client
         });
 
         const savedSale = await newSale.save();
@@ -25,7 +25,7 @@ router.post('/productreg', async (req, res) => {
 //update sales data
 router.put('/project/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, desc, client, budget } = req.body;
+    const { name, desc, client, budget, imageUrl } = req.body;
 
     try {
         const prj = await Sales.findById(id);
@@ -37,6 +37,7 @@ router.put('/project/:id', async (req, res) => {
         prj.desc = desc || prj.desc;
         prj.client = client || prj.client;
         prj.budget = budget || prj.budget;
+        prj.imageUrl = imageUrl || prj.imageUrl;
 
         await prj.save();
 
@@ -49,7 +50,7 @@ router.put('/project/:id', async (req, res) => {
 //all sales data
 router.get('/sales', auth, async (req, res) => {
     try {
-        const salesData = await Sales.find().select('_id name desc owner client progress createdAt');
+        const salesData = await Sales.find().select('_id name desc owner ownerId client invitedUsers progress createdAt');
         res.status(200).json({ salesData });
     } catch (error) {
         console.error('Server error:', error);

@@ -67,7 +67,7 @@ router.post('/signin', async (req, res) => {
         }
 
         const token = jwt.sign({ id: user._id, type: userType }, process.env.JWT_SECRET, {
-            expiresIn: '1h',
+            expiresIn: '3h',
         });
 
         res.status(200).json({ 
@@ -161,12 +161,13 @@ router.delete('/clients/:id', async (req, res) => {
 //get client_names
 router.get('/getclientnames', auth, async (req, res) => {
     try {
-        const clients = await User.find({}, 'name');
+        const clients = await User.find({}, 'name code');
         res.status(200).json(clients);
     } catch (error) {
-        console.error('Error fetching employees:', error);
+        console.error('Error fetching clients:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 module.exports = router;

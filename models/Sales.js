@@ -13,6 +13,10 @@ const salesSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  ownerId: {
+    type: String,
+    required: true,
+  },
   client: {
     type: String,
     required: true,
@@ -29,7 +33,8 @@ const salesSchema = new mongoose.Schema({
     type: Number,
     default: 0,
     min: 0 
-  }
+  },
+  imageUrl: { type: String }
 }, { timestamps: true });
 
 salesSchema.pre('save', function(next) {

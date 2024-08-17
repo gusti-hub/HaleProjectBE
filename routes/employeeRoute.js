@@ -15,7 +15,13 @@ router.post('/empreg', async (req, res) => {
     }
 
     try {
-        const existingUser = await Employee.findOne({ email });
+        const existingUser = await Employee.findOne({
+            $or: [
+                { email }, 
+                { name: new RegExp(`^${name}$`, 'i') }
+            ]
+        });
+        
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
@@ -62,6 +68,13 @@ router.put('/employee/:id', async (req, res) => {
             }
         }
 
+        if (name && name !== user.name) {
+            const existingUserWithName = await Employee.findOne({ name: new RegExp(`^${name}$`, 'i') });
+            if (existingUserWithName) {
+                return res.status(400).json({ message: 'Name is already used by another user' });
+            }
+        }
+
         user.name = name || user.name;
         user.email = email || user.email;
         user.title = title || user.title;
@@ -81,6 +94,7 @@ router.put('/employee/:id', async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
 
 // delete employee
 router.delete('/employee/:id', async (req, res) => {
