@@ -1,11 +1,12 @@
 const express = require('express');
 const Role = require('../models/Role.js');
 const AuthorizationRole = require('../models/AuthorizationRoles.js');
+const auth = require('../utils/jwtUtils.js');
 
 const router = express.Router();
 
 // Role Route
-router.get('/roles', async (req, res) => {
+router.get('/roles', auth, async (req, res) => {
     try {
         const roles = await Role.find();
         res.status(200).json({ roles });
@@ -95,7 +96,7 @@ router.put('/roles/:id', async (req, res) => {
 
 
 // Authorization Role Route
-router.get('/authorizationRole', async (req, res) => {
+router.get('/authorizationRole', auth, async (req, res) => {
     try {
         const authorizationRoles = await AuthorizationRole.find();
         res.status(200).json({ authorizationRoles });

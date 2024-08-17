@@ -161,7 +161,7 @@ router.delete('/clients/:id', async (req, res) => {
 //get client_names
 router.get('/getclientnames', auth, async (req, res) => {
     try {
-        const clients = await User.find({}, 'name');
+        const clients = await User.find({}, 'code name');
         res.status(200).json(clients);
     } catch (error) {
         console.error('Error fetching employees:', error);
