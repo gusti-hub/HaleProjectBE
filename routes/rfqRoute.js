@@ -141,4 +141,42 @@ router.get('/rfqProducts/:projectId/:rfqId', auth, async (req, res) => {
     }
 });
 
+router.get('/getDwdRFQPdts/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const rfq = await RFQs.findById(id);
+
+        if (!rfq) {
+            return res.status(404).json({ message: 'RFQ not found' });
+        }
+
+        const productIds = rfq.products.map(product => product.productId);
+        const products = await Products.find({ _id: { $in: productIds } });
+
+        const response = rfq.products.map(product => {
+            const productDetail = products.find(pd => pd._id.toString() === product.productId);
+            return {
+                ...productDetail._doc,
+                qty: product.qty,
+                price: product.price
+            };
+        });
+
+        const productDetails = response.map(product => ({
+            ...product,
+            orgRFQId: rfq.rfqId,
+            orgDeadline: rfq.deadline,
+            orgVendor: rfq.vendor,
+            orgCurrUnit: rfq.curr,
+            orgPOStatus: rfq.status
+        }));
+
+        res.status(200).json(productDetails);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;

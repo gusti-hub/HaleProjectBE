@@ -31,7 +31,11 @@ const poSchema = new mongoose.Schema({
     },
     products: [{
         productId: {type: String},
-    }]
+    }],
+    status: {
+        type: String,
+        default: 'Waiting for approval'
+    }
 }, { timestamps: true });
 
 const POs = mongoose.model('POs', poSchema);
