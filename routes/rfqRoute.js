@@ -68,7 +68,7 @@ router.get('/getRFQPdts/:id', auth, async (req, res) => {
         const productIds = rfq.products.map(product => product.productId);
         const products = await Products.find({ _id: { $in: productIds } });
 
-        res.status(200).json({ products: products, curr: rfq.curr, rfqPdts: rfq.products });
+        res.status(200).json({ products: products, curr: rfq.curr, rfqPdts: rfq.products, rfqId: rfq.rfqId, vendor: rfq.vendor });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -134,14 +134,14 @@ router.get('/rfqProducts/:projectId/:rfqId', auth, async (req, res) => {
             };
         });
 
-        return res.json(response);
+        return res.json({response: response});
     } catch (error) {
         console.error('Error fetching RFQ or products:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 });
 
-router.get('/getDwdRFQPdts/:id', async (req, res) => {
+router.get('/getDwdRFQPdts/:id', auth, async (req, res) => {
     try {
         const { id } = req.params;
 
