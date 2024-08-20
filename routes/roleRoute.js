@@ -190,7 +190,12 @@ router.get('/actions', (req, res) => {
         { id: '6', name: 'Role Registration Navigation'},
         { id: '7', name: 'Authorization Role Navigation'},
         { id: '8', name: 'Procurement Navigation'},
-        { id: '9', name: 'Inventory Navigation'}
+        { id: '9', name: 'Inventory Navigation'},
+        { id: '10', name: 'Approve Design'},
+        { id: '11', name: 'Reject Design'},
+        { id: '12', name: 'Approve Proposal'},
+        { id: '13', name: 'Reject Proposal'},
+        { id: '14', name: 'Delete Project'}
     ];
     res.json(options);
 });
