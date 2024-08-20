@@ -14,6 +14,14 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    sku: {
+        type: String,
+        required: false,
+    },    
+    furnishing: {
+        type: String,
+        required: true,
+    },
     qty: {
         type: String,
         required: true,
@@ -30,6 +38,62 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
+    qty: {
+        type: String,
+        required: true,
+    },
+    rfq: {
+        type: String,
+        required: false,
+    },
+    vendor: {
+        type: String,
+        required: false,
+    },
+    net_cost: {
+        type: String,
+        required: false,
+    },
+    shipping_cost: {
+        type: String,
+        required: false,
+    },
+    other_cost: {
+        type: String,
+        required: false,
+    },
+    po_amount: {
+        type: String,
+        required: false,
+    },
+    buy_tax: {
+        type: String,
+        required: false,
+    },
+    buy_sales_tax: {
+        type: String,
+        required: false,
+    },
+    sell_markup: {
+        type: String,
+        required: false,
+    },
+    client_product_cost: {
+        type: String,
+        required: false,
+    },
+    client_price: {
+        type: String,
+        required: false,
+    },  
+    sell_tax: {
+        type: String,
+        required: false,
+    },  
+    sell_sales_tax: {
+        type: String,
+        required: false,
+    },                          
     productDetails: {
         type: Map,
         of: mongoose.Schema.Types.Mixed,
