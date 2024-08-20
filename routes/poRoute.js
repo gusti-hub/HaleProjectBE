@@ -14,7 +14,7 @@ router.post('/add-po', async (req, res) => {
         }
 
         const newPO = new POs({
-            poId, projectId, vendor, rfq, delivery, receive, totalPrice, products: products
+            poId, projectId, vendor, rfq, delivery, receive, totalPrice, products: products, status: 'Waiting for approval'
         });
 
         await newPO.save();
@@ -39,7 +39,7 @@ router.post('/add-po', async (req, res) => {
     }
 });
 
-router.get('/poDetails/:projectId', async (req, res) => {
+router.get('/poDetails/:projectId', auth, async (req, res) => {
     try {
         const { projectId } = req.params;
         const allPOs = await POs.find({ projectId });
@@ -49,5 +49,59 @@ router.get('/poDetails/:projectId', async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
+router.put('/updatePOStatus/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const po = await POs.findById(id);
+
+        if (!po) {
+            return res.status(404).json({ message: 'PO not found' });
+        }
+
+        po.status = "Approved";
+
+        po.save();
+
+        res.status(200).json({ message: 'Products updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.get('/getPOPdts/:id', auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const po = await POs.findById(id);
+
+        if (!po) {
+            return res.status(404).json({ message: 'PO not found' });
+        }
+
+        const productIds = po.products.map(product => product.productId);
+
+        const products = await Products.find({ _id: { $in: productIds } });
+
+        const productDetails = products.map(product => ({
+            ...product.toObject(),
+            orgPOId: po.poId,
+            orgPODate: po.createdAt,
+            orgRFQ: po.rfq,
+            orgVendor: po.vendor,
+            orgTP: po.totalPrice,
+            orgEstDel: po.delivery,
+            orgEstRec: po.receive,
+            orgPOStatus: po.status
+        }));
+
+        res.status(200).json(productDetails);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred while retrieving products' });
+    }
+});
+
 
 module.exports = router;

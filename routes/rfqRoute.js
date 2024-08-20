@@ -68,7 +68,7 @@ router.get('/getRFQPdts/:id', auth, async (req, res) => {
         const productIds = rfq.products.map(product => product.productId);
         const products = await Products.find({ _id: { $in: productIds } });
 
-        res.status(200).json({ products: products, curr: rfq.curr, rfqPdts: rfq.products });
+        res.status(200).json({ products: products, curr: rfq.curr, rfqPdts: rfq.products, rfqId: rfq.rfqId, vendor: rfq.vendor });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -134,10 +134,48 @@ router.get('/rfqProducts/:projectId/:rfqId', auth, async (req, res) => {
             };
         });
 
-        return res.json(response);
+        return res.json({response: response});
     } catch (error) {
         console.error('Error fetching RFQ or products:', error);
         return res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.get('/getDwdRFQPdts/:id', auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const rfq = await RFQs.findById(id);
+
+        if (!rfq) {
+            return res.status(404).json({ message: 'RFQ not found' });
+        }
+
+        const productIds = rfq.products.map(product => product.productId);
+        const products = await Products.find({ _id: { $in: productIds } });
+
+        const response = rfq.products.map(product => {
+            const productDetail = products.find(pd => pd._id.toString() === product.productId);
+            return {
+                ...productDetail._doc,
+                qty: product.qty,
+                price: product.price
+            };
+        });
+
+        const productDetails = response.map(product => ({
+            ...product,
+            orgRFQId: rfq.rfqId,
+            orgDeadline: rfq.deadline,
+            orgVendor: rfq.vendor,
+            orgCurrUnit: rfq.curr,
+            orgPOStatus: rfq.status
+        }));
+
+        res.status(200).json(productDetails);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
