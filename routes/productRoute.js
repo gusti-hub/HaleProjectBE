@@ -5,6 +5,16 @@ const auth = require('../utils/jwtUtils.js');
 
 const router = express.Router();
 
+router.get('/allpdts', auth, async (req, res) => {
+    try {
+        const pdts = await Products.find();
+        res.status(200).json(pdts);
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
 router.post('/addSection', async (req, res) => {
     try {
         const { projectId, secname } = req.body;
