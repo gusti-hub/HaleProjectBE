@@ -159,7 +159,7 @@ router.get('/invPO/:id', auth, async (req, res) => {
     }
 });
 
-router.get('/invBackOrderPO/:id', async (req, res) => {
+router.get('/invBackOrderPO/:id', auth, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -169,20 +169,21 @@ router.get('/invBackOrderPO/:id', async (req, res) => {
             return res.status(404).json({ message: 'PO not found' });
         }
 
-        const products = po.products;
-        const pdtIdArray = products.map(product => ({ productId: product.productId }));
+        const products = po.products.filter(pdt => pdt.demQty != 0);
 
         const productIds = products.map(product => product.productId);
 
         const productsDetails = await Products.find({ _id: { $in: productIds } });
 
-        const response = po.products.map(product => {
+        const response = products.map(product => {
             const productDetail = productsDetails.find(pd => pd._id.toString() === product.productId);
             return {
                 ...productDetail._doc,
                 qty: product.demQty
             };
         });
+
+        const pdtIdArray = products.map(product => ({ productId: product.productId }));
 
         const poDetails = {
             _id: po._id,

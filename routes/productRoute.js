@@ -2,13 +2,44 @@ const express = require('express');
 const Products = require('../models/Product.js');
 const Sections = require('../models/Section.js');
 const auth = require('../utils/jwtUtils.js');
+const DOCs = require('../models/DOCs.js');
 
 const router = express.Router();
 
+// router.get('/allpdts', auth, async (req, res) => {
+//     try {
+//         const pdts = await Products.find();
+//         res.status(200).json(pdts);
+//     } catch (error) {
+//         console.error('Server error:', error);
+//         res.status(500).json({ message: 'Server error', error });
+//     }
+// });
+
 router.get('/allpdts', auth, async (req, res) => {
     try {
+
         const pdts = await Products.find();
-        res.status(200).json(pdts);
+
+        const docs = await DOCs.find();
+
+        const enrichedPdts = pdts.map(product => {
+            let totalRecQty = 0;
+            docs.forEach(doc => {
+                doc.products.forEach(p => {
+                    if (p.productId === product._id.toString()) {
+                        totalRecQty += p.recQty;
+                    }
+                });
+            });
+
+            return {
+                ...product._doc,
+                totalRecQty
+            };
+        });
+
+        res.status(200).json(enrichedPdts);
     } catch (error) {
         console.error('Server error:', error);
         res.status(500).json({ message: 'Server error', error });
