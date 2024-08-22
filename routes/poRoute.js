@@ -159,6 +159,45 @@ router.get('/invPO/:id', auth, async (req, res) => {
     }
 });
 
+router.get('/invBackOrderPO/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const po = await POs.findById(id);
+
+        if (!po) {
+            return res.status(404).json({ message: 'PO not found' });
+        }
+
+        const products = po.products;
+        const pdtIdArray = products.map(product => ({ productId: product.productId }));
+
+        const productIds = products.map(product => product.productId);
+
+        const productsDetails = await Products.find({ _id: { $in: productIds } });
+
+        const response = po.products.map(product => {
+            const productDetail = productsDetails.find(pd => pd._id.toString() === product.productId);
+            return {
+                ...productDetail._doc,
+                qty: product.demQty
+            };
+        });
+
+        const poDetails = {
+            _id: po._id,
+            vendor: po.vendor,
+            currPO: po.poId,
+            currPdts: pdtIdArray
+        };
+
+        res.status(200).json({ response: response, poDetails: poDetails });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred while retrieving products' });
+    }
+});
+
 router.put('/update-rec-qty/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -206,6 +245,42 @@ router.put('/update-rec-qty/:id', async (req, res) => {
     }
 });
 
+router.put('/update-recBackOrder-qty/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { products, status } = req.body;
+
+        const po = await POs.findById(id);
+
+        if (!po) {
+            return res.status(404).json({ message: "PO not found" });
+        }
+
+        po.products = products || po.products;
+        po.inStatus = status || po.inStatus;
+
+        await po.save();
+
+        const doc = await DOCs.findOne({ docNumber: po.docNumber });
+
+        doc.products = products || doc.products;
+        doc.inStatus = status || doc.inStatus;
+
+        await doc.save();
+
+        const docDetails = {
+            docNum: doc.docNumber,
+            poId: doc.poId,
+            pdts: doc.products
+        }
+
+        res.status(200).json({ message: "Received Quantity updated", docDetails: docDetails });
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error });
+        console.log(error);
+    }
+});
+
 
 
 
@@ -221,7 +296,7 @@ router.get('/getAllDocs', auth, async (req, res) => {
     }
 });
 
-router.get('/viewDoc/:id/:docNum', async (req, res) => {
+router.get('/viewDoc/:id/:docNum', auth, async (req, res) => {
     try {
         const { id, docNum } = req.params;
 
@@ -266,7 +341,7 @@ router.post('/createBackOrder/:poId', async (req, res) => {
 
         const po = await POs.findById(poId);
 
-        if(!po) {
+        if (!po) {
             return res.status(404).json({ message: "PO not found" });
         }
 
