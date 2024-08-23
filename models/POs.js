@@ -30,11 +30,24 @@ const poSchema = new mongoose.Schema({
         required: true,
     },
     products: [{
-        productId: {type: String},
+        productId: { type: String },
+        recQty: {type: Number},
+        demQty: {type: Number}
     }],
     status: {
         type: String,
         default: 'Waiting for approval'
+    },
+    docNumber: {
+        type: String
+    },
+    inStatus: {
+        type: String,
+        default: 'Waiting for arrival'
+    },
+    isBackOrder: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 
