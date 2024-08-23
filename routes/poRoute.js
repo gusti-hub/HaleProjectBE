@@ -4,6 +4,7 @@ const Products = require('../models/Product.js');
 const POs = require('../models/POs.js');
 const RFQs = require('../models/RFQ.js');
 const DOCs = require('../models/DOCs.js');
+const InPdts = require('../models/InPdts.js');
 
 const router = express.Router();
 
@@ -224,6 +225,21 @@ router.put('/update-rec-qty/:id', async (req, res) => {
 
         await newDoc.save();
 
+        await Promise.all(products.map(async (product) => {
+            const inPdt = await InPdts.findOne({ productID: product.productId });
+        
+            if (inPdt) {
+                inPdt.totQty = Number(inPdt.totQty) + Number(product.recQty);
+                await inPdt.save();
+            } else {
+                await InPdts.create({
+                    productID: product.productId,
+                    totQty: Number(product.recQty)
+                });
+            }
+        }));
+        
+
         const updatedPO = await POs.findOneAndUpdate(
             { _id: id },
             { $set: { products: products } },
@@ -242,9 +258,11 @@ router.put('/update-rec-qty/:id', async (req, res) => {
 
         res.status(200).json({ message: "Received Quantity updated", docDetails: docDetails });
     } catch (error) {
+        console.error('Server Error:', error);
         res.status(500).json({ message: "Server Error", error });
     }
 });
+
 
 router.put('/update-recBackOrder-qty/:id', async (req, res) => {
     try {
@@ -268,6 +286,20 @@ router.put('/update-recBackOrder-qty/:id', async (req, res) => {
         doc.inStatus = status || doc.inStatus;
 
         await doc.save();
+
+        await Promise.all(products.map(async (product) => {
+            const inPdt = await InPdts.findOne({ productID: product.productId });
+        
+            if (inPdt) {
+                inPdt.totQty = Number(inPdt.totQty) + Number(product.recQty);
+                await inPdt.save();
+            } else {
+                await InPdts.create({
+                    productID: product.productId,
+                    totQty: Number(product.recQty)
+                });
+            }
+        }));
 
         const docDetails = {
             docNum: doc.docNumber,

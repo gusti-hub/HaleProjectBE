@@ -9,6 +9,11 @@ router.post('/productreg', async (req, res) => {
     try {
         const { name, desc, owner, ownerId, client } = req.body;
 
+        const existingSale = await Sales.findOne({ name });
+        if (existingSale) {
+            return res.status(400).json({ message: "A project with this name already exists" });
+        }
+
         const newSale = new Sales({
             name, desc, owner, ownerId, client
         });
@@ -21,6 +26,17 @@ router.post('/productreg', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+router.get('/sales-name', auth, async (req, res) => {
+    try {
+        const sales = await Sales.find().select('_id name');
+        res.status(200).json(sales);
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
 
 //update sales data
 router.put('/project/:id', async (req, res) => {

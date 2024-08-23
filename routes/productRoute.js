@@ -3,6 +3,9 @@ const Products = require('../models/Product.js');
 const Sections = require('../models/Section.js');
 const auth = require('../utils/jwtUtils.js');
 const DOCs = require('../models/DOCs.js');
+const InPdts = require('../models/InPdts.js');
+const OutDocs = require('../models/OutDoc.js');
+const Sales = require('../models/Sales.js');
 
 const router = express.Router();
 
@@ -18,26 +21,15 @@ const router = express.Router();
 
 router.get('/allpdts', auth, async (req, res) => {
     try {
-
         const pdts = await Products.find();
 
-        const docs = await DOCs.find();
-
-        const enrichedPdts = pdts.map(product => {
-            let totalRecQty = 0;
-            docs.forEach(doc => {
-                doc.products.forEach(p => {
-                    if (p.productId === product._id.toString()) {
-                        totalRecQty += p.recQty;
-                    }
-                });
-            });
-
+        const enrichedPdts = await Promise.all(pdts.map(async product => {
+            const inPdt = await InPdts.findOne({ productID: product._id.toString() });
             return {
                 ...product._doc,
-                totalRecQty
+                totalRecQty: inPdt ? inPdt.totQty : 0
             };
-        });
+        }));
 
         res.status(200).json(enrichedPdts);
     } catch (error) {
@@ -45,6 +37,8 @@ router.get('/allpdts', auth, async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
+
 
 router.post('/addSection', async (req, res) => {
     try {
@@ -178,6 +172,14 @@ router.post('/newProductItem', async (req, res) => {
             });
 
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+
+            await newInPdt.save();
+
         }
         else if (furnishing == 'Area Rug'){
             const newProduct = new Products({
@@ -221,6 +223,13 @@ router.post('/newProductItem', async (req, res) => {
             });
 
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }        
         else if (furnishing == 'Equipment'){
             const newProduct = new Products({
@@ -256,6 +265,13 @@ router.post('/newProductItem', async (req, res) => {
             });
 
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }  
         else if (furnishing == 'Hardware'){
             const newProduct = new Products({
@@ -291,6 +307,13 @@ router.post('/newProductItem', async (req, res) => {
             });
 
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }        
         else if (furnishing == 'Artwork'){
             const newProduct = new Products({
@@ -337,6 +360,13 @@ router.post('/newProductItem', async (req, res) => {
             });
 
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }   
         else if (furnishing == 'Casegood'){
             const newProduct = new Products({
@@ -375,6 +405,13 @@ router.post('/newProductItem', async (req, res) => {
             });
 
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }
         else if (furnishing == 'Fabric'){
             const newProduct = new Products({
@@ -413,6 +450,13 @@ router.post('/newProductItem', async (req, res) => {
             });
 
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }
         else if (furnishing == 'Light Fixture (hardwired)'){
             const newProduct = new Products({
@@ -465,6 +509,13 @@ router.post('/newProductItem', async (req, res) => {
                 imageUrl
             });
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }        
         else if (furnishing == 'Decorative Lighting'){
             const newProduct = new Products({
@@ -516,6 +567,14 @@ router.post('/newProductItem', async (req, res) => {
                 imageUrl
             });
         await newProduct.save();
+
+        const newInPdt = new InPdts({
+            productID: newProduct._id,
+            totQty: 0
+        });
+
+        await newInPdt.save();
+
         }   
         else if (furnishing == 'Mirror'){
             const newProduct = new Products({
@@ -553,6 +612,14 @@ router.post('/newProductItem', async (req, res) => {
                 imageUrl
             });
         await newProduct.save();
+
+        const newInPdt = new InPdts({
+            productID: newProduct._id,
+            totQty: 0
+        });
+
+        await newInPdt.save();
+
         }   
         else if (furnishing == 'Miscellaneous'){
             const newProduct = new Products({
@@ -584,6 +651,14 @@ router.post('/newProductItem', async (req, res) => {
                 imageUrl
             });
         await newProduct.save();
+
+        const newInPdt = new InPdts({
+            productID: newProduct._id,
+            totQty: 0
+        });
+
+        await newInPdt.save();
+
         }   
         else if (furnishing == 'Table'){
             const newProduct = new Products({
@@ -620,6 +695,13 @@ router.post('/newProductItem', async (req, res) => {
                 imageUrl
             });
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }
         else if (furnishing == 'Seating'){
             const newProduct = new Products({
@@ -666,6 +748,13 @@ router.post('/newProductItem', async (req, res) => {
                 imageUrl
             });
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         } 
         else if (furnishing == 'Wallpaper'){
             const newProduct = new Products({
@@ -704,6 +793,13 @@ router.post('/newProductItem', async (req, res) => {
                 imageUrl
             });
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }          
         else if (furnishing == 'Upholstery'){
             const newProduct = new Products({
@@ -740,6 +836,13 @@ router.post('/newProductItem', async (req, res) => {
                 imageUrl
             });
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }          
         else if (furnishing == 'Window Treatment'){
             const newProduct = new Products({
@@ -802,6 +905,13 @@ router.post('/newProductItem', async (req, res) => {
                 imageUrl
             });
             await newProduct.save();
+
+            const newInPdt = new InPdts({
+                productID: newProduct._id,
+                totQty: 0
+            });
+    
+            await newInPdt.save();
         }      
 
         res.status(201).json({ message: 'Product registered successfully'});
@@ -1663,5 +1773,87 @@ router.put('/updateQty/:id', async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
+router.get('/findProducts-out/:id', auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const sections = await Sections.find({ projectId: id });
+
+        if (!sections.length) {
+            return res.status(404).json({ message: 'No sections found for this projectId' });
+        }
+
+        const sectionIds = sections.map(section => section._id);
+
+        const products = await Products.find({ projectId: { $in: sectionIds } });
+
+        if (!products.length) {
+            return res.status(404).json({ message: 'No products found for these sections' });
+        }
+
+        const enrichedProducts = await Promise.all(products.map(async (product) => {
+            const inPdt = await InPdts.findOne({ productID: product._id.toString() });
+            return {
+                ...product._doc,
+                totQty: inPdt ? inPdt.totQty : 0
+            };
+        }));
+
+        res.status(200).json(enrichedProducts);
+    } catch (error) {
+        console.error('Error finding products:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.get('/outDocs', auth, async (req, res) => {
+    try {
+        const docs = await OutDocs.find();
+        res.status(200).json(docs);
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.put('/updateOutDoc', async (req, res) => {
+    try {
+        const {
+            array,
+            docNum,
+            projectId,
+            reason
+        } = req.body;
+
+        await Promise.all(array.map(async (item) => {
+            const { id, qty } = item;
+
+            const inPdt = await InPdts.findOne({ productID: id });
+
+            if (inPdt) {
+                inPdt.totQty = Number(inPdt.totQty) - Number(qty);
+                await inPdt.save();
+            } else {
+                return res.status(404).json({ message: `Product with ID ${id} not found!` });
+            }
+        }));
+
+        const prj = await Sales.findById(projectId);
+
+        const newDoc = new OutDocs({
+            docNum, projectName: prj.name, reason
+        });
+
+        await newDoc.save();
+
+        res.status(200).json({ message: 'Inventory updated successfully' });
+    } catch (error) {
+        console.error('Error updating quantities:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+
 
 module.exports = router;
