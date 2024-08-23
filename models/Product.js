@@ -103,7 +103,7 @@ const productSchema = new mongoose.Schema({
     imageUrl: { type: String },
     status: {
         type: String,
-        default: "Pending"
+        default: "Waiting for Client Approval"
     },
     rfqNumber: {type: String},
     price: {type: Number},
