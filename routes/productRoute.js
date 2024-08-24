@@ -255,6 +255,16 @@ router.delete('/product/:id', async (req, res) => {
 
         await Products.deleteOne({ _id: id });
 
+        if (pdt.type === 'Product') {
+            const inpdts = await InPdts.findOne({ productID: id });
+
+            if (!inpdts) {
+                return res.status(404).json({ message: 'Inventory item not found' });
+            }
+
+            await InPdts.deleteOne({ productID: id });
+        }
+
         res.status(200).json({ message: 'Item deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
