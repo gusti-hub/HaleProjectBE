@@ -196,7 +196,8 @@ router.get('/actions', (req, res) => {
         { id: '11', name: 'Reject Design'},
         { id: '12', name: 'Approve Proposal'},
         { id: '13', name: 'Reject Proposal'},
-        { id: '14', name: 'Delete Project'}
+        { id: '14', name: 'Delete Project'},
+        { id: '15', name: 'Create Project'}
     ];
     res.json(options);
 });
