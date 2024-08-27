@@ -1,6 +1,8 @@
 const express = require('express');
 const Sales = require('../models/Sales.js');
 const auth = require('../utils/jwtUtils.js');
+const Products = require('../models/Product.js');
+const Sections = require('../models/Section.js');
 
 const router = express.Router();
 
@@ -177,6 +179,31 @@ router.delete('/project/:id', async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
+router.get('/project-collab/:id', auth, async (req, res) => {
+    try {
+        const projectId = req.params.id;
+
+        const sections = await Sections.find({ projectId: projectId });
+
+        const result = [];
+
+        for (const section of sections) {
+
+            const products = await Products.find({ projectId: section._id });
+
+            result.push({
+                sectionName: section.secname,
+                products: products
+            });
+        }
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
 
 
 module.exports = router;
