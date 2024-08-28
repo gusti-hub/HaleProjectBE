@@ -174,6 +174,34 @@ router.put('/product/:projectId/:name/newComment/:_id', async (req, res) => {
     }
 });
 
+router.put('/newChat/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, body, userType } = req.body;
+
+    try {
+        const product = await Products.findById(id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found!' });
+        }
+
+        const newChat = {
+            name: name,
+            body: body,
+            userType: userType
+        };
+
+        product.chats.push(newChat);
+
+        await product.save();
+
+        res.status(201).json({ message: 'Chat is updated' });
+    } catch (error) {
+        console.error('Error adding chat:', error);
+        res.status(500).json({ message: 'Error adding chat!' });
+    }
+});
+
 router.put('/product/:_id', async (req, res) => {
     const { _id } = req.params;
     const { title, desc, imageUrl } = req.body;
