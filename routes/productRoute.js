@@ -6,6 +6,7 @@ const DOCs = require('../models/DOCs.js');
 const InPdts = require('../models/InPdts.js');
 const OutDocs = require('../models/OutDoc.js');
 const Sales = require('../models/Sales.js');
+const mongoose = require('mongoose');
 
 const router = express.Router();
 
@@ -384,26 +385,27 @@ router.put('/updateOutDoc', async (req, res) => {
             array,
             docNum,
             projectId,
-            reason
+            reason,
+            products
         } = req.body;
 
         await Promise.all(array.map(async (item) => {
-            const { id, qty } = item;
+            const { pdtid, qty } = item;
 
-            const inPdt = await InPdts.findOne({ productID: id });
+            const inPdt = await InPdts.findOne({ productID: pdtid });
 
             if (inPdt) {
                 inPdt.totQty = Number(inPdt.totQty) - Number(qty);
                 await inPdt.save();
             } else {
-                return res.status(404).json({ message: `Product with ID ${id} not found!` });
+                return res.status(404).json({ message: `Product with ID ${pdtid} not found!` });
             }
         }));
 
         const prj = await Sales.findById(projectId);
 
         const newDoc = new OutDocs({
-            docNum, projectName: prj.name, reason
+            docNum, projectName: prj.name, reason, products
         });
 
         await newDoc.save();
@@ -435,5 +437,40 @@ router.put('/updatePdtStatus/:id', async (req, res) => {
         res.status(500).json({ message: 'Error updating status:', error });
     }
 });
+
+router.get('/viewOutDoc/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate the ObjectId
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid document ID" });
+        }
+
+        const doc = await OutDocs.findOne({ _id: id });
+
+        if (!doc) {
+            return res.status(404).json({ message: "Document not found!" });
+        }
+
+        const productIds = doc.products.map(product => product.pdtid);
+
+        const productsDetails = await Products.find({ _id: { $in: productIds } });
+
+        const response = doc.products.map(product => {
+            const productDetail = productsDetails.find(pd => pd._id.toString() === product.pdtid);
+            return {
+                ...productDetail._doc,
+                outQty: product.qty
+            };
+        });
+
+        res.status(200).json(response);
+    } catch (error) {
+        console.error('Server error:', error.message);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
 
 module.exports = router;
