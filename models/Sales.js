@@ -5,6 +5,10 @@ const salesSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  code: {
+    type: String,
+    required: true,
+  },
   desc: {
     type: String,
     required: false,

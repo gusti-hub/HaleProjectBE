@@ -227,7 +227,7 @@ router.put('/update-rec-qty/:id', async (req, res) => {
 
         await Promise.all(products.map(async (product) => {
             const inPdt = await InPdts.findOne({ productID: product.productId });
-        
+
             if (inPdt) {
                 inPdt.totQty = Number(inPdt.totQty) + Number(product.recQty);
                 await inPdt.save();
@@ -238,7 +238,7 @@ router.put('/update-rec-qty/:id', async (req, res) => {
                 });
             }
         }));
-        
+
 
         const updatedPO = await POs.findOneAndUpdate(
             { _id: id },
@@ -289,7 +289,7 @@ router.put('/update-recBackOrder-qty/:id', async (req, res) => {
 
         await Promise.all(products.map(async (product) => {
             const inPdt = await InPdts.findOne({ productID: product.productId });
-        
+
             if (inPdt) {
                 inPdt.totQty = Number(inPdt.totQty) + Number(product.recQty);
                 await inPdt.save();

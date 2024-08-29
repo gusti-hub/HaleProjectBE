@@ -12,7 +12,11 @@ const outdocSchema = new mongoose.Schema({
     reason: {
         type: String,
         required: false,
-    }
+    },
+    products: [{
+        pdtid: { type: String },
+        qty: {type: Number}
+    }],
 }, { timestamps: true });
 
 const OutDocs = mongoose.model('OutDocs', outdocSchema);

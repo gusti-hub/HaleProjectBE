@@ -1,13 +1,15 @@
 const express = require('express');
 const Sales = require('../models/Sales.js');
 const auth = require('../utils/jwtUtils.js');
+const Products = require('../models/Product.js');
+const Sections = require('../models/Section.js');
 
 const router = express.Router();
 
 // project creation
 router.post('/productreg', async (req, res) => {
     try {
-        const { name, desc, owner, ownerId, client } = req.body;
+        const { name, code, desc, owner, ownerId, client } = req.body;
 
         const existingSale = await Sales.findOne({ name });
         if (existingSale) {
@@ -15,7 +17,7 @@ router.post('/productreg', async (req, res) => {
         }
 
         const newSale = new Sales({
-            name, desc, owner, ownerId, client
+            name, code, desc, owner, ownerId, client
         });
 
         const savedSale = await newSale.save();
@@ -66,7 +68,7 @@ router.put('/project/:id', async (req, res) => {
 //all sales data
 router.get('/sales', auth, async (req, res) => {
     try {
-        const salesData = await Sales.find().select('_id name desc owner ownerId client invitedUsers progress createdAt');
+        const salesData = await Sales.find().select('_id name code desc owner ownerId client invitedUsers progress createdAt');
         res.status(200).json({ salesData });
     } catch (error) {
         console.error('Server error:', error);
@@ -177,6 +179,31 @@ router.delete('/project/:id', async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
+router.get('/project-collab/:id', auth, async (req, res) => {
+    try {
+        const projectId = req.params.id;
+
+        const sections = await Sections.find({ projectId: projectId });
+
+        const result = [];
+
+        for (const section of sections) {
+
+            const products = await Products.find({ projectId: section._id });
+
+            result.push({
+                sectionName: section.secname,
+                products: products
+            });
+        }
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
 
 
 module.exports = router;
