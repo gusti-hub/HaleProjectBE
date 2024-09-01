@@ -48,6 +48,9 @@ const poSchema = new mongoose.Schema({
     isBackOrder: {
         type: Boolean,
         default: false
+    },
+    recDate: {
+        type: String
     }
 }, { timestamps: true });
 

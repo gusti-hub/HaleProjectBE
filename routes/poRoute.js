@@ -211,8 +211,11 @@ router.put('/update-rec-qty/:id', async (req, res) => {
             return res.status(404).json({ message: "PO not found" });
         }
 
+        const today = new Date();
+
         po.docNumber = docNumber || po.docNumber;
         po.inStatus = status || po.inStatus;
+        po.recDate = today.toISOString().split('T')[0];
 
         await po.save();
 
@@ -275,8 +278,11 @@ router.put('/update-recBackOrder-qty/:id', async (req, res) => {
             return res.status(404).json({ message: "PO not found" });
         }
 
+        const today = new Date();
+
         po.products = products || po.products;
         po.inStatus = status || po.inStatus;
+        po.recDate = today.toISOString().split('T')[0];
 
         await po.save();
 
@@ -386,6 +392,7 @@ router.post('/createBackOrder/:poId', async (req, res) => {
         clonedPO.products = backOrderProducts || clonedPO.products;
         clonedPO.isBackOrder = true || false;
         clonedPO.inStatus = "Back Order";
+        clonedPO.recDate = "";
 
         const newPO = new POs(clonedPO);
 
