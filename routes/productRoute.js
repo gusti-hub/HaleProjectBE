@@ -40,8 +40,6 @@ router.get('/allpdts', auth, async (req, res) => {
     }
 });
 
-
-
 router.post('/addSection', async (req, res) => {
     try {
         const { projectId, secname } = req.body;

@@ -105,11 +105,22 @@ router.put('/updatePdtPrice/:id', async (req, res) => {
             { $set: { rfqReceiveDate: today.toISOString().split('T')[0] } }
         );
 
+        const updatePromises = productPrices.map(async pdt => {
+            const product = await Products.findOne({ _id: pdt.productId });
+            if (product) {
+                product.buyPrice = Number(pdt.price);
+                return product.save();
+            }
+        });
+
+        await Promise.all(updatePromises);
+
         res.status(200).json({ message: 'Products updated successfully', rfq });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
 
 router.get('/rfqProducts/:projectId/:rfqId', auth, async (req, res) => {
     const { projectId, rfqId } = req.params;
