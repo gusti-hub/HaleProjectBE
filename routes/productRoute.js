@@ -7,6 +7,7 @@ const InPdts = require('../models/InPdts.js');
 const OutDocs = require('../models/OutDoc.js');
 const Sales = require('../models/Sales.js');
 const mongoose = require('mongoose');
+const StockAdjDocs = require('../models/StockAdj.js');
 
 const router = express.Router();
 
@@ -38,8 +39,6 @@ router.get('/allpdts', auth, async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
-
-
 
 router.post('/addSection', async (req, res) => {
     try {
@@ -1915,11 +1914,10 @@ router.put('/updatePdtStatus/:id', async (req, res) => {
     }
 });
 
-router.get('/viewOutDoc/:id', async (req, res) => {
+router.get('/viewOutDoc/:id', auth, async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Validate the ObjectId
         if (!mongoose.isValidObjectId(id)) {
             return res.status(400).json({ message: "Invalid document ID" });
         }
@@ -1949,5 +1947,93 @@ router.get('/viewOutDoc/:id', async (req, res) => {
     }
 });
 
+router.get('/getInvPdts', auth, async (req, res) => {
+    try {
+        const pdts = await InPdts.find();
+
+        const pdtIds = pdts.map(pdt => pdt.productID);
+
+        const products = await Products.find({ _id: { $in: pdtIds } });
+
+        const pdtArray = pdts.map(pdt => {
+            const productDetail = products.find(pd => pd._id.toString() === pdt.productID);
+            return {
+                ...productDetail._doc,
+                totQty: pdt.totQty
+            };
+        });
+
+        res.status(200).json(pdtArray);
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.put('/update-invQty', async (req, res) => {
+    try {
+        const { docNum, reason, products } = req.body;
+
+        for (const product of products) {
+            await InPdts.findOneAndUpdate(
+                { productID: product.pdtid },
+                { $set: { totQty: product.qty } },
+                { new: true, upsert: false }
+            );
+        }
+
+        const newDoc = new StockAdjDocs({ docNum, reason, products });
+
+        await newDoc.save();
+
+        res.status(200).json({ message: 'Quantities updated successfully' });
+    } catch (error) {
+        console.error('Error updating quantities:', error);
+        res.status(500).json({ error: 'Failed to update quantities' });
+    }
+});
+
+router.get('/getStockAdjDocs', auth, async (req, res) => {
+    try {
+        const docs = await StockAdjDocs.find();
+        res.status(200).json(docs);
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.get('/viewSADoc/:id', auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid document ID" });
+        }
+
+        const doc = await StockAdjDocs.findOne({ _id: id });
+
+        if (!doc) {
+            return res.status(404).json({ message: "Document not found!" });
+        }
+
+        const productIds = doc.products.map(product => product.pdtid);
+
+        const productsDetails = await Products.find({ _id: { $in: productIds } });
+
+        const response = doc.products.map(product => {
+            const productDetail = productsDetails.find(pd => pd._id.toString() === product.pdtid);
+            return {
+                ...productDetail._doc,
+                qty: product.qty
+            };
+        });
+
+        res.status(200).json(response);
+    } catch (error) {
+        console.error('Server error:', error.message);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
 
 module.exports = router;

@@ -25,7 +25,7 @@ const moreDetailsSchema = new mongoose.Schema({
     // vendor: { type: String, required: false }, 
     // budget: { type: Number, required: false }, 
     // buyCost: { type: Number, required: false }, 
-    // sellCost: { type: Number, required: false }
+    sellCost: { type: Number, required: false }
 });
 
 const productSchema = new mongoose.Schema({
@@ -133,6 +133,7 @@ const productSchema = new mongoose.Schema({
     price: { type: Number },
     rfqSentDate: { type: String },
     rfqReceiveDate: { type: String },
+    buyPrice: {type: Number},
     poNumber: { type: String },
     poSentDate: { type: String },
 }, { timestamps: true });
