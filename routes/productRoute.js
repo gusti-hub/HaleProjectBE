@@ -559,4 +559,25 @@ router.get('/viewSADoc/:id', auth, async (req, res) => {
     }
 });
 
+router.get('/calculate-revenue', auth, async (req, res) => {
+    try {
+      const inPdts = await InPdts.find();
+  
+      let totalCost = 0;
+
+      for (const inPdt of inPdts) {
+        const product = await Products.findById(inPdt.productID);
+  
+        if (product) {
+          totalCost += inPdt.totQty * product.productDetails.sellCost;
+        }
+      }
+  
+      res.status(200).json(totalCost);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
 module.exports = router;
