@@ -3,6 +3,7 @@ const Sales = require('../models/Sales.js');
 const auth = require('../utils/jwtUtils.js');
 const Products = require('../models/Product.js');
 const Sections = require('../models/Section.js');
+const Employees = require('../models/Employee.js');
 
 const router = express.Router();
 
@@ -33,6 +34,16 @@ router.get('/sales-name', auth, async (req, res) => {
     try {
         const sales = await Sales.find().select('_id name');
         res.status(200).json(sales);
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.get('/sales-no', auth, async (req, res) => {
+    try {
+        const sales = await Sales.find();
+        res.status(200).json(sales.length);
     } catch (error) {
         console.error('Server error:', error);
         res.status(500).json({ message: 'Server error', error });
@@ -204,6 +215,59 @@ router.get('/project-collab/:id', auth, async (req, res) => {
     }
 });
 
+router.get('/project-statuses', auth, async (req, res) => {
+    try {
+        const statuses = ['Not Started', 'In progress', 'Request for Approval', 'Approved', 'Rejected'];
 
+        const statusCounts = await Sales.aggregate([
+            {
+                $match: {
+                    progress: { $in: statuses }
+                }
+            },
+            {
+                $group: {
+                    _id: '$progress',
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    progress: '$_id',
+                    count: 1,
+                    _id: 0
+                }
+            }
+        ]);
+
+        const response = statuses.map(status => {
+            const statusData = statusCounts.find(item => item.progress === status);
+            return statusData ? statusData.count : 0;
+        });
+
+        res.json(response);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.get('/emp-prj-data', auth, async (req, res) => {
+    try {
+
+        const emps = await Employees.find().select('name');
+
+        const empNames = emps.map(emp => emp.name);
+
+        const results = await Promise.all(empNames.map(async (employee) => {
+            const count = await Sales.countDocuments({ owner: employee });
+            return { name: employee, salesCount: count };
+        }));
+
+        res.status(200).json(results);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
 
 module.exports = router;
