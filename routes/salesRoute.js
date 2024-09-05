@@ -3,6 +3,8 @@ const Sales = require('../models/Sales.js');
 const auth = require('../utils/jwtUtils.js');
 const Products = require('../models/Product.js');
 const Sections = require('../models/Section.js');
+const POs = require('../models/POs.js');
+const RFQs = require('../models/RFQ.js');
 const Employees = require('../models/Employee.js');
 
 const router = express.Router();
@@ -269,5 +271,58 @@ router.get('/emp-prj-data', auth, async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
+router.get('/prj-sales-data', auth, async (req, res) => {
+    try {
+        const sales = await Sales.find();
+
+        if (sales.length === 0) {
+            return res.status(404).json({ message: 'No sales found' });
+        }
+
+        const results = await Promise.all(sales.map(async (sale) => {
+            const sections = await Sections.find({ projectId: sale._id });
+            const sectionIds = sections.map(section => section._id.toString());
+            const products = await Products.find({ projectId: { $in: sectionIds } });
+
+            const rfqs = await RFQs.find({ projectId: sale._id.toString() });
+
+            let allRFQProducts = [];
+            rfqs.forEach(rfq => {
+                rfq.products.forEach(product => {
+                    if (!allRFQProducts.some(p => p.productId === product.productId)) {
+                        allRFQProducts.push(product);
+                    }
+                });
+            });
+
+            const pos = await POs.find({ projectId: sale._id.toString() });
+
+            let allPOProducts = [];
+            pos.forEach(po => {
+                po.products.forEach(product => {
+                    if (!allPOProducts.some(p => p.productId === product.productId)) {
+                        allPOProducts.push(product);
+                    }
+                });
+            });
+
+            return {
+                saleId: sale._id,
+                saleName: sale.name,
+                clientName: sale.client,
+                numberOfProducts: products.length,
+                totalUniqueRFQProducts: allRFQProducts.length,
+                totalUniquePOProducts: allPOProducts.length
+            };
+        }));
+
+        res.json(results);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 
 module.exports = router;
