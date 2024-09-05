@@ -272,7 +272,7 @@ router.get('/emp-prj-data', auth, async (req, res) => {
     }
 });
 
-router.get('/prj-sales-data', async (req, res) => {
+router.get('/prj-sales-data', auth, async (req, res) => {
     try {
         const sales = await Sales.find();
 
@@ -312,8 +312,8 @@ router.get('/prj-sales-data', async (req, res) => {
                 saleName: sale.name,
                 clientName: sale.client,
                 numberOfProducts: products.length,
-                totalUniqueRFQProducts: allRFQProducts.length,                 
-                totalUniquePOProducts: allPOProducts.length    
+                totalUniqueRFQProducts: allRFQProducts.length,
+                totalUniquePOProducts: allPOProducts.length
             };
         }));
 
