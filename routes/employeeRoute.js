@@ -4,15 +4,22 @@ const jwt = require('jsonwebtoken');
 const Employee = require('../models/Employee.js');
 const auth = require('../utils/jwtUtils.js');
 const Sales = require('../models/Sales.js');
+const User = require('../models/User.js');
 
 const router = express.Router();
 
 router.get('/getLoggedInUser/:id', async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const user = await Employee.findById(id);
-        res.status(200).json(user.name);
+        if (!user) {
+            const client = await User.findById(id);
+            res.status(200).json(client.name);
+        } else {
+            res.status(200).json(user.name);
+        }
     } catch (error) {
+        console.log(error);
         console.error('Server error:', error);
         res.status(500).json({ message: 'Server error', error });
     }
