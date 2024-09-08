@@ -22,7 +22,6 @@ const moreDetailsSchema = new mongoose.Schema({
     insert: { type: String, required: false },
     finish: { type: String, required: false },
     qty: { type: Number, required: false },
-    // vendor: { type: String, required: false }, 
     // budget: { type: Number, required: false }, 
     // buyCost: { type: Number, required: false }, 
     sellCost: { type: Number, required: false }
