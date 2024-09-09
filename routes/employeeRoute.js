@@ -8,15 +8,75 @@ const User = require('../models/User.js');
 
 const router = express.Router();
 
+router.get('/profile-page/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let user = await Employee.findById(id);
+        let userType = "Employee";
+
+        if (!user) {
+            user = await User.findById(id);
+            userType = "Client";
+        }
+
+        if (!user) {
+            res.status(404).json({ message: "Couldn't find the User!" });
+        }
+
+        res.status(200).json({ user: user, userType: userType });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.put('/update-my-profile/:id', async (req, res) => {
+    const { id } = req.params;
+    const { oldPass, newPass, title, imageUrl } = req.body;
+
+    try {
+        let user = await Employee.findById(id);
+
+        if (!user) {
+            user = await User.findById(id);
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: "Couldn't find the User!" });
+        }
+
+        if (user) {
+            if (oldPass.length > 0 && newPass.length > 0) {
+                const isMatch = await bcrypt.compare(oldPass, user.password);
+                if (!isMatch) {
+                    return res.status(400).json({ message: "Old password doesn't match!" });
+                } else {
+                    const salt = await bcrypt.genSalt(10);
+                    user.password = await bcrypt.hash(newPass, salt);
+                }
+            }  
+            
+            user.title = title || user.title;
+            user.imageUrl = imageUrl || user.imageUrl;
+            
+            await user.save();  
+        }
+
+        res.status(200).json({ message: 'Profile has been updated.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
 router.get('/getLoggedInUser/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const user = await Employee.findById(id);
         if (!user) {
             const client = await User.findById(id);
-            res.status(200).json(client.name);
+            res.status(200).json(client);
         } else {
-            res.status(200).json(user.name);
+            res.status(200).json(user);
         }
     } catch (error) {
         console.log(error);

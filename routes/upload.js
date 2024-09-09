@@ -1,4 +1,4 @@
-const { S3Client } = require("@aws-sdk/client-s3");
+const { S3Client, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { Upload } = require("@aws-sdk/lib-storage");
 const multer = require('multer');
 const multerS3 = require('multer-s3');
@@ -13,7 +13,6 @@ const s3 = new S3Client({
   forcePathStyle: true,
 });
 
-// Configure Multer-S3
 const upload = multer({
   storage: multerS3({
     s3: s3,
@@ -25,5 +24,25 @@ const upload = multer({
   })
 });
 
-module.exports = upload;
+async function deleteFileFromBucket(fileKey) {
+  try {
+    const deleteParams = {
+      Bucket: 'hale-project',
+      Key: fileKey,
+    };
+
+    const command = new DeleteObjectCommand(deleteParams);
+    await s3.send(command);
+    console.log(`File deleted successfully: ${fileKey}`);
+  } catch (error) {
+    console.error('Error deleting file:', error);
+  }
+}
+
+module.exports = {
+  upload,
+  deleteFileFromBucket,
+};
+
+
 

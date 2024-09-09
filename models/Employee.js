@@ -21,7 +21,8 @@ const employeeSchema = new mongoose.Schema({
   role: {
     type: String,
     required: true,
-  }
+  },
+  imageUrl: { type: String }
 });
 
 const Employee = mongoose.model('Employee', employeeSchema);
