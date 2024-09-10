@@ -3,8 +3,87 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Employee = require('../models/Employee.js');
 const auth = require('../utils/jwtUtils.js');
+const Sales = require('../models/Sales.js');
+const User = require('../models/User.js');
 
 const router = express.Router();
+
+router.get('/profile-page/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let user = await Employee.findById(id);
+        let userType = "Employee";
+
+        if (!user) {
+            user = await User.findById(id);
+            userType = "Client";
+        }
+
+        if (!user) {
+            res.status(404).json({ message: "Couldn't find the User!" });
+        }
+
+        res.status(200).json({ user: user, userType: userType });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.put('/update-my-profile/:id', async (req, res) => {
+    const { id } = req.params;
+    const { oldPass, newPass, title, imageUrl } = req.body;
+
+    try {
+        let user = await Employee.findById(id);
+
+        if (!user) {
+            user = await User.findById(id);
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: "Couldn't find the User!" });
+        }
+
+        if (user) {
+            if (oldPass.length > 0 && newPass.length > 0) {
+                const isMatch = await bcrypt.compare(oldPass, user.password);
+                if (!isMatch) {
+                    return res.status(400).json({ message: "Old password doesn't match!" });
+                } else {
+                    const salt = await bcrypt.genSalt(10);
+                    user.password = await bcrypt.hash(newPass, salt);
+                }
+            }  
+            
+            user.title = title || user.title;
+            user.imageUrl = imageUrl || user.imageUrl;
+            
+            await user.save();  
+        }
+
+        res.status(200).json({ message: 'Profile has been updated.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.get('/getLoggedInUser/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await Employee.findById(id);
+        if (!user) {
+            const client = await User.findById(id);
+            res.status(200).json(client);
+        } else {
+            res.status(200).json(user);
+        }
+    } catch (error) {
+        console.log(error);
+        console.error('Server error:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
 
 // Employee Registration
 router.post('/empreg', async (req, res) => {
@@ -17,11 +96,11 @@ router.post('/empreg', async (req, res) => {
     try {
         const existingUser = await Employee.findOne({
             $or: [
-                { email }, 
+                { email },
                 { name: new RegExp(`^${name}$`, 'i') }
             ]
         });
-        
+
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
@@ -57,6 +136,7 @@ router.put('/employee/:id', async (req, res) => {
 
     try {
         const user = await Employee.findById(id);
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -75,6 +155,8 @@ router.put('/employee/:id', async (req, res) => {
             }
         }
 
+        const oldName = user.name;
+
         user.name = name || user.name;
         user.email = email || user.email;
         user.title = title || user.title;
@@ -89,7 +171,19 @@ router.put('/employee/:id', async (req, res) => {
 
         await user.save();
 
-        res.status(200).json({ message: 'User updated successfully', user });
+        if (name && name !== oldName) {
+            await Sales.updateMany(
+                { owner: oldName },
+                { $set: { owner: name } }
+            );
+
+            await Sales.updateMany(
+                { invitedUsers: oldName },
+                { $set: { 'invitedUsers.$': name } }
+            );
+        }
+
+        res.status(200).json({ message: 'User updated successfully', userId: user._id, userName: user.name });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }
@@ -106,8 +200,14 @@ router.delete('/employee/:id', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        await Employee.deleteOne({ _id: id });
-        res.status(200).json({ message: 'User deleted successfully' });
+        const sales = await Sales.find({ owner: user.name });
+
+        if (sales.length > 0) {
+            return res.status(404).json({ message: "Can't delete! User has active project(s)." });
+        } else {
+            await Employee.deleteOne({ _id: id });
+            res.status(200).json({ message: 'User deleted successfully' });
+        }
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }

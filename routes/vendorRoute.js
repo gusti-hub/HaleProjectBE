@@ -1,6 +1,8 @@
 const express = require('express');
 const Vendor = require('../models/Vendor.js');
 const auth = require('../utils/jwtUtils.js');
+const RFQs = require('../models/RFQ.js');
+const POs = require('../models/POs.js');
 
 const router = express.Router();
 
@@ -12,9 +14,9 @@ router.post('/vendorreg', async (req, res) => {
     }
 
     try {
-        const existingUser = await Vendor.findOne({ $or: [{ email }, { code }] });
+        const existingUser = await Vendor.findOne({ $or: [{ email }, { code }, { name }] });
         if (existingUser) {
-            return res.status(400).json({ message: 'Vendor with this email or code already exists' });
+            return res.status(400).json({ message: 'Vendor with this name or email or code already exists' });
         }
 
         const newUser = new Vendor({ code, name, email, title, address });
@@ -61,6 +63,8 @@ router.put('/vendors/:id', async (req, res) => {
             }
         }
 
+        const oldName = user.name;
+
         user.code = code || user.code;
         user.name = name || user.name;
         user.email = email || user.email;
@@ -68,6 +72,18 @@ router.put('/vendors/:id', async (req, res) => {
         user.address = address || user.address;
 
         await user.save();
+
+        if (name && name !== oldName) {
+            await RFQs.updateMany(
+                { vendor: oldName },
+                { $set: { vendor: name } }
+            );
+
+            await POs.updateMany(
+                { vendor: oldName },
+                { $set: { vendor: name } }
+            );
+        };
 
         res.status(200).json({ message: 'Vendor updated successfully', user });
     } catch (error) {
@@ -84,8 +100,15 @@ router.delete('/vendors/:id', async (req, res) => {
             return res.status(404).json({ message: 'Vendor not found' });
         }
 
-        await Vendor.deleteOne({ _id: id });
-        res.status(200).json({ message: 'Vendor deleted successfully' });
+        const rfqs = await RFQs.find({ vendor: user.name });
+        const pos = await POs.find({ vendor: user.name });
+
+        if (rfqs.length > 0 || pos.length > 0) {
+            return res.status(404).json({ message: "Can't delete! Vendor has active RFQ(s) or PO(s)." });
+        } else {
+            await Vendor.deleteOne({ _id: id });
+            res.status(200).json({ message: 'Vendor deleted successfully' });
+        }
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }

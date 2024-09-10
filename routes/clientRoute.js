@@ -5,6 +5,7 @@ const User = require('../models/User.js');
 const Employee = require('../models/Employee.js');
 const auth = require('../utils/jwtUtils.js');
 const AuthorizationRoles = require('../models/AuthorizationRoles.js');
+const Sales = require('../models/Sales.js');
 
 const router = express.Router();
 
@@ -70,9 +71,9 @@ router.post('/signin', async (req, res) => {
             expiresIn: '3h',
         });
 
-        res.status(200).json({ 
-            message: 'User signed in successfully', 
-            token, 
+        res.status(200).json({
+            message: 'User signed in successfully',
+            token,
             _id: user._id,
             name: user.name, 
             type: userType,
@@ -121,6 +122,9 @@ router.put('/clients/:id', async (req, res) => {
             }
         }
 
+        const oldName = user.name;
+        const oldCode = user.code;
+
         user.code = code || user.code;
         user.name = name || user.name;
         user.email = email || user.email;
@@ -133,6 +137,13 @@ router.put('/clients/:id', async (req, res) => {
         }
 
         await user.save();
+
+        if (name && name !== oldName) {
+            await Sales.updateMany(
+                { client: `${oldCode}-${oldName}` },
+                { $set: { client: `${code}-${name}` } }
+            );
+        }
 
         res.status(200).json({ message: 'User updated successfully', user });
     } catch (error) {
@@ -151,8 +162,13 @@ router.delete('/clients/:id', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        await User.deleteOne({ _id: id });
-        res.status(200).json({ message: 'User deleted successfully' });
+        const sales = await Sales.find({ client: `${user.code}-${user.name}` });
+        if (sales.length > 0) {
+            return res.status(404).json({ message: "Can't delete! User has active project(s)." });
+        } else {
+            await User.deleteOne({ _id: id });
+            res.status(200).json({ message: 'User deleted successfully' });
+        }
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }
