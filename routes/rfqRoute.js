@@ -2,6 +2,7 @@ const express = require('express');
 const RFQs = require('../models/RFQ.js');
 const auth = require('../utils/jwtUtils.js');
 const Products = require('../models/Product.js');
+const moment = require('moment');
 
 const router = express.Router();
 
@@ -187,6 +188,40 @@ router.get('/getDwdRFQPdts/:id', auth, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.get('/getApproachingRFQs', async (req, res) => {
+    try {
+        const today = moment().startOf('day'); 
+
+        const rfqs = await RFQs.find({}, '_id rfqId deadline')
+            .sort({ deadline: 1 }); 
+
+        const approachingRFQs = rfqs
+            .filter(rfq => moment(rfq.deadline, 'YYYY-MM-DD').isSameOrAfter(today)) 
+            .map(rfq => {
+                const deadline = moment(rfq.deadline, 'YYYY-MM-DD').format('YYYY-MM-DD');
+                if (moment(rfq.deadline, 'YYYY-MM-DD').isSame(today, 'day')) {
+                    return {
+                        _id: rfq._id,
+                        rfqId: rfq.rfqId,
+                        deadline: 'Today',
+                    };
+                } else {
+                    return {
+                        _id: rfq._id,
+                        rfqId: rfq.rfqId,
+                        deadline: deadline,
+                    };
+                }
+            });
+
+        res.status(200).json(approachingRFQs);
+
+    } catch (error) {
+        console.error('Error fetching approaching RFQs:', error);
+        res.status(500).json({ message: 'Server error while loading notifications!' });
     }
 });
 
