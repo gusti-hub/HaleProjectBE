@@ -1,7 +1,9 @@
 const express = require('express');
+const POs = require('../models/POs.js');
 const RFQs = require('../models/RFQ.js');
 const auth = require('../utils/jwtUtils.js');
 const Products = require('../models/Product.js');
+const moment = require('moment');
 
 const router = express.Router();
 
@@ -145,7 +147,7 @@ router.get('/rfqProducts/:projectId/:rfqId', auth, async (req, res) => {
             };
         });
 
-        return res.json({response: response});
+        return res.json({ response: response });
     } catch (error) {
         console.error('Error fetching RFQ or products:', error);
         return res.status(500).json({ message: 'Server error' });
@@ -187,6 +189,59 @@ router.get('/getDwdRFQPdts/:id', auth, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.get('/getApproachingRFQsPOs', async (req, res) => {
+    try {
+        const today = moment().startOf('day');
+
+        // Fetch RFQs with approaching deadlines
+        const rfqs = await RFQs.find({}, '_id rfqId deadline')
+            .sort({ deadline: 1 });
+
+        const approachingRFQs = rfqs
+            .filter(rfq => moment(rfq.deadline, 'YYYY-MM-DD').isSameOrAfter(today))
+            .map(rfq => {
+                const deadline = moment(rfq.deadline, 'YYYY-MM-DD').format('YYYY-MM-DD');
+                return {
+                    _id: rfq._id,
+                    id: rfq.rfqId,
+                    type: 'RFQ',  // Mark type for distinguishing
+                    date: moment(rfq.deadline, 'YYYY-MM-DD').isSame(today, 'day') ? 'Today' : deadline,
+                };
+            });
+
+        // Fetch POs with approaching receive dates where isBackOrder is false
+        const pos = await POs.find({ isBackOrder: false }, '_id poId receive')
+            .sort({ receive: 1 });
+
+        const approachingPOs = pos
+            .filter(po => moment(po.receive, 'YYYY-MM-DD').isSameOrAfter(today))
+            .map(po => {
+                const receiveDate = moment(po.receive, 'YYYY-MM-DD').format('YYYY-MM-DD');
+                return {
+                    _id: po._id,
+                    id: po.poId,
+                    type: 'PO',  // Mark type for distinguishing
+                    date: moment(po.receive, 'YYYY-MM-DD').isSame(today, 'day') ? 'Today' : receiveDate,
+                };
+            });
+
+        // Merge and sort the final array based on the date
+        const approachingItems = [...approachingRFQs, ...approachingPOs].sort((a, b) => {
+            // If either date is 'Today', treat it as the earliest date
+            if (a.date === 'Today') return -1;
+            if (b.date === 'Today') return 1;
+
+            return moment(a.date).diff(moment(b.date));
+        });
+
+        res.status(200).json(approachingItems);
+
+    } catch (error) {
+        console.error('Error fetching approaching data:', error);
+        res.status(500).json({ message: 'Server error while loading notifications!' });
     }
 });
 
