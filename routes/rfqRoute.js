@@ -196,8 +196,7 @@ router.get('/getApproachingRFQsPOs', async (req, res) => {
     try {
         const today = moment().startOf('day');
 
-        // Fetch RFQs with approaching deadlines
-        const rfqs = await RFQs.find({}, '_id rfqId deadline')
+        const rfqs = await RFQs.find({ status: { $ne: "Received RFQ" } }, '_id rfqId deadline')
             .sort({ deadline: 1 });
 
         const approachingRFQs = rfqs
@@ -207,13 +206,13 @@ router.get('/getApproachingRFQsPOs', async (req, res) => {
                 return {
                     _id: rfq._id,
                     id: rfq.rfqId,
-                    type: 'RFQ',  // Mark type for distinguishing
+                    type: 'RFQ',
                     date: moment(rfq.deadline, 'YYYY-MM-DD').isSame(today, 'day') ? 'Today' : deadline,
                 };
             });
 
-        // Fetch POs with approaching receive dates where isBackOrder is false
-        const pos = await POs.find({ isBackOrder: false }, '_id poId receive')
+
+        const pos = await POs.find({ isBackOrder: false, inStatus: "Waiting for arrival" }, '_id poId receive')
             .sort({ receive: 1 });
 
         const approachingPOs = pos
@@ -223,14 +222,12 @@ router.get('/getApproachingRFQsPOs', async (req, res) => {
                 return {
                     _id: po._id,
                     id: po.poId,
-                    type: 'PO',  // Mark type for distinguishing
+                    type: 'PO',
                     date: moment(po.receive, 'YYYY-MM-DD').isSame(today, 'day') ? 'Today' : receiveDate,
                 };
             });
 
-        // Merge and sort the final array based on the date
         const approachingItems = [...approachingRFQs, ...approachingPOs].sort((a, b) => {
-            // If either date is 'Today', treat it as the earliest date
             if (a.date === 'Today') return -1;
             if (b.date === 'Today') return 1;
 
