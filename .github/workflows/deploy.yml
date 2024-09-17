@@ -23,13 +23,13 @@ jobs:
       run: npm install
 
     - name: Build Docker image
-      run: docker build -t registry.digitalocean.com/hale-container-registry/hale-be:latest .
+      run: docker build -t registry.digitalocean.com/hale-project-container-registry/hale-be:latest .
 
     - name: Login to DigitalOcean Container Registry
       run: echo ${{ secrets.DOCKER_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u doadmin --password-stdin
 
     - name: Push Docker image to DigitalOcean Container Registry
-      run: docker push registry.digitalocean.com/hale-container-registry/hale-be:latest
+      run: docker push registry.digitalocean.com/hale-project-container-registry/hale-be:latest
 
     - name: Deploy to DigitalOcean Droplet
       uses: appleboy/ssh-action@v0.1.7
