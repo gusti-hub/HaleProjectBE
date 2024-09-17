@@ -83,23 +83,34 @@ router.get('/getPOPdts/:id', auth, async (req, res) => {
             return res.status(404).json({ message: 'PO not found' });
         }
 
-        const productIds = po.products.map(product => product.productId);
+        const rfq = await RFQs.findOne({rfqId: po.rfq});
+
+        const productIds = rfq.products.map(product => product.productId);
 
         const products = await Products.find({ _id: { $in: productIds } });
 
-        const productDetails = products.map(product => ({
-            ...product.toObject(),
-            orgPOId: po.poId,
-            orgPODate: po.createdAt,
-            orgRFQ: po.rfq,
-            orgVendor: po.vendor,
-            orgTP: po.totalPrice,
-            orgEstDel: po.delivery,
-            orgEstRec: po.receive,
-            orgPOStatus: po.status
-        }));
+        // const productDetails = products.map(product => ({
+        //     ...product.toObject(),
+        //     orgPOId: po.poId,
+        //     orgPODate: po.createdAt,
+        //     orgRFQ: po.rfq,
+        //     orgVendor: po.vendor,
+        //     orgTP: po.totalPrice,
+        //     orgEstDel: po.delivery,
+        //     orgEstRec: po.receive,
+        //     orgPOStatus: po.status
+        // }));
 
-        res.status(200).json(productDetails);
+        const response = rfq.products.map(product => {
+            const productDetail = products.find(pd => pd._id.toString() === product.productId);
+            return {
+                ...productDetail._doc,
+                qty: product.qty,
+                price: product.price
+            };
+        });
+
+        res.status(200).json(response);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'An error occurred while retrieving products' });
