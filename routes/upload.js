@@ -7,8 +7,8 @@ const s3 = new S3Client({
   region: "sfo3",
   endpoint: "https://sfo3.digitaloceanspaces.com",
   credentials: {
-    accessKeyId: 'DO002VUHPJDJGAB8FQ9C',
-    secretAccessKey: '13E6HNQfVf+L9K6TdzpL6HggtYF0vW8eOuFQOkq36PM',
+    accessKeyId: 'DO007K62PD6YGKD388BM',
+    secretAccessKey: 'DWIMl/DRhK6QadZKrSv8LkT91EfhaJf+Imq4QFfe4IE',
   },
   forcePathStyle: true,
 });
@@ -16,7 +16,7 @@ const s3 = new S3Client({
 const upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: 'hale-project',
+    bucket: 'hale-furniture-project',
     acl: 'public-read',
     key: function (req, file, cb) {
       cb(null, Date.now().toString() + '-' + file.originalname);
