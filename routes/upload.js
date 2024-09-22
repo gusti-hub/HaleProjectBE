@@ -5,7 +5,7 @@ const multerS3 = require('multer-s3');
 
 const s3 = new S3Client({
   region: "sfo3",
-  endpoint: "https://sfo3.digitaloceanspaces.com",
+  endpoint: "https://hale-furniture-project.nyc3.digitaloceanspaces.com",
   credentials: {
     accessKeyId: 'DO007K62PD6YGKD388BM',
     secretAccessKey: 'DWIMl/DRhK6QadZKrSv8LkT91EfhaJf+Imq4QFfe4IE',
