@@ -7,9 +7,9 @@ const Expenses = require('../models/Expenses.js');
 module.exports = router;
 
 // Get user's time data
-router.get('/times', auth, async (req, res) => {
+router.get('/times/:userId', auth, async (req, res) => {
   try {
-    const { userId } = req.user;
+    const { userId } = req.params;
 
     // Fetch time data for the user
     const timeData = await Time.findOne({ userid: userId });
@@ -26,9 +26,9 @@ router.get('/times', auth, async (req, res) => {
 });
 
 // Update or create user's time data
-router.post('/times', auth, async (req, res) => {
+router.post('/times/:userId', auth, async (req, res) => {
   try {
-    const { userId } = req.user;
+    const { userId } = req.params;
     const { date, projects } = req.body;
 
     // Validate request
