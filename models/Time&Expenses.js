@@ -1,12 +1,39 @@
 const mongoose = require('mongoose');
 
-const timeExpensesSchema = new mongoose.Schema({
-  projectId: {
-    type: String,
-    required: true,
-  }
-}, { timestamps: true });
+const timeSchema = new mongoose.Schema({
 
-const TimeExpenses = mongoose.model('TimeExpenses', timeExpensesSchema);
+  userid: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  time: [
+    {
+      date: {
+        type: Date,
+        required: true
+      },
+      projects: [
+        {
+          projectCode: {
+            type: String,
+            required: true
+          },
+          hours: {
+            type: Number,
+            required: true
+          }
+        }
+      ],
+    }
+  ]
+});
 
-module.exports = TimeExpenses;
+
+const Time = mongoose.model('Time', timeSchema);
+
+module.exports = Time;
+
+
+
+
