@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-
-// Middleware to verify user and extract userId from the token
 const auth = require('../utils/jwtUtils');
 
 const Time = require('../models/Time&Expenses');
@@ -65,10 +63,6 @@ router.post('/times', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-
-
-
 
 router.post('/add-expense', async (req, res) => {
     const { prj, frmDate, toDate, type, amount, totalAmount, comment, imageUrl } = req.body;
