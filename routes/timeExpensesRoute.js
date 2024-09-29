@@ -44,43 +44,30 @@ router.put('/times/:userId', async (req, res) => {
 	try {
 		const { userId } = req.params;
 		const { date, projects } = req.body;
-		
-		console.log(userId);
-		console.log(projects);
-		console.log(date);
-
 
 		// Validate request
 		if (!date || !projects || !Array.isArray(projects) || projects.length === 0) {
 			return res.status(400).json({ message: 'Date and projects are required' });
 		}
 
+		// Create new time entry object
 		const newTimeEntry = {
-			date: new Date(date),
-			projects: projects.map((project) => ({
-				projectCode: project.code,
-				hours: project.hours
-			}))
+			userid: userId,
+			time: [{
+				date: new Date(date),
+				projects: projects.map((project) => ({
+					projectCode: project.code,
+					hours: project.hours
+				}))
+			}]
 		};
 
-		let timeEntry = await Time.findOneAndUpdate(
-			{ userid: userId, 'time.date': new Date(date) },
-			{ $set: { 'time.$': newTimeEntry } }, // Update the specific time entry for the date
-			{ new: true }
-		);
+		// Create a new Time document
+		const timeEntry = await Time.create(newTimeEntry);
 
-		if (!timeEntry) {
-			// If no entry exists for that date, push new date and projects
-			timeEntry = await Time.findOneAndUpdate(
-				{ userid: userId },
-				{ $push: { time: newTimeEntry } },
-				{ new: true, upsert: true } // Create new entry if it doesn't exist
-			);
-		}
-
-		res.status(200).json({ message: 'Time entry updated successfully', timeEntry });
+		res.status(200).json({ message: 'Time entry created successfully', timeEntry });
 	} catch (error) {
-		console.error('Error updating time data:', error);
+		console.error('Error creating time entry:', error);
 		res.status(500).json({ message: 'Server error' });
 	}
 });
