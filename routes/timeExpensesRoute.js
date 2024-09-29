@@ -39,7 +39,6 @@ router.get('/times/:userId', async (req, res) => {
 
 
 // Update or create user's time data
-// Update or create user's time data
 router.put('/times/:userId', async (req, res) => {
 	try {
 		const { userId } = req.params;
