@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../utils/jwtUtils');
 
-const Time = require('../models/Time&Expenses');
+const Time = require('../models/Time.js');
 const Expenses = require('../models/Expenses.js');
 module.exports = router;
 
@@ -23,11 +23,7 @@ router.get('/times/:userId', async (req, res) => {
 			});
 			await timeData.save(); // Save the new entry
 			return res.status(201).json({ message: 'New time data created', timeData: [] });
-		}
-
-		console.log("Time Data:", timeData);
-
-	
+		}	
 
 		// Return only the filtered data for the projectCode
 		res.status(200).json({ timeData });
@@ -43,12 +39,7 @@ router.put('/times/:userId', async (req, res) => {
 	try {
 		const { userId } = req.params;
 		const { date, projects } = req.body;
-		
-		console.log(userId);
-		console.log(projects);
-		console.log(date);
-
-
+	
 		// Validate request
 		if (!date || !projects || !Array.isArray(projects) || projects.length === 0) {
 			return res.status(400).json({ message: 'Date and projects are required' });
@@ -95,7 +86,9 @@ router.post('/add-expense', async (req, res) => {
 	try {
 		const newExpense = new Expenses({ prj, frmDate, toDate, type, amount, totalAmount, comment, imageUrl });
 
-		await newExpense.save();
+		// await newExpense.save();
+
+		console.log(newExpense);
 
 		res.status(201).json({ message: 'Expense added successfully' });
 	} catch (error) {
