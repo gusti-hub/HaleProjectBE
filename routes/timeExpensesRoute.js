@@ -8,7 +8,7 @@ const TimeNExpense = require("../models/TimeNExpense.js");
 module.exports = router;
 
 // Get user's time data
-router.get("/times/:userId", async (req, res) => {
+router.get("/times/:userId", auth, async (req, res) => {
 	try {
 		const { userId } = req.params;
 
@@ -37,7 +37,7 @@ router.get("/times/:userId", async (req, res) => {
 	}
 });
 
-router.get("/fetch-times/:id", async (req, res) => {
+router.get("/fetch-times/:id", auth, async (req, res) => {
 	try {
 		const { id } = req.params;
 
@@ -48,7 +48,7 @@ router.get("/fetch-times/:id", async (req, res) => {
 			return res.status(404).json({ message: "No time data found for the provided ID" });
 		}
 
-		console.log("Time Data:", timeData);
+		// console.log("Time Data:", timeData);
 
 		// Return the time data
 		res.status(200).json({ timeData });
@@ -149,7 +149,33 @@ router.get("/expenses", auth, async (req, res) => {
 	}
 });
 
-router.get("/te-docs", async (req, res) => {
+router.get("/expense/:id", async (req, res) => {
+
+	const { id } = req.params;
+
+	try {
+		const expense = await Expenses.findById(id);
+		res.status(200).json(expense);
+	} catch (error) {
+		console.error("Server error:", error);
+		res.status(500).json({ message: "Server error", error });
+	}
+});
+
+router.get("/te-doc/:id", async (req, res) => {
+
+	const { id } = req.params;
+
+	try {
+		const doc = await TimeNExpense.findById(id);
+		res.status(200).json(doc);
+	} catch (error) {
+		console.error("Server error:", error);
+		res.status(500).json({ message: "Server error", error });
+	}
+});
+
+router.get("/te-docs", auth, async (req, res) => {
 	try {
 		const docs = await TimeNExpense.find();
 		res.status(200).json(docs);
@@ -157,6 +183,28 @@ router.get("/te-docs", async (req, res) => {
 		console.error("Server error:", error);
 		res.status(500).json({ message: "Server error", error });
 	}
+});
+
+router.put('/update-te-status/:_id', async (req, res) => {
+    const { _id } = req.params;
+    const { status } = req.body;
+
+    try {
+        const doc = await TimeNExpense.findById(_id);
+
+        if (!doc) {
+            return res.status(404).json({ message: 'Document not found!' });
+        }
+
+        doc.status = status || doc.status;
+
+        await doc.save();
+
+        res.status(200).json({ message: 'Status updated successfully' });
+    } catch (error) {
+        console.error('Error updating status:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
 });
 
 module.exports = router;
