@@ -139,6 +139,43 @@ router.post("/add-expense", async (req, res) => {
 	}
 });
 
+
+router.put("/update-expense/:id", async (req, res) => {
+	const { prj, frmDate, toDate, type, amount, totalAmount, comment, imageUrl } = req.body;
+
+	const { id } = req.params;
+
+	if (!prj || !frmDate || !toDate || !type || !amount || !totalAmount) {
+		return res
+			.status(400)
+			.json({ message: "Please provide all the mandatory details." });
+	}
+
+	try {
+		const expense = await Expenses.findById(id);
+
+		if (!expense) {
+			res.status(404).json({ message: "Expense not found!"});
+		}
+
+		expense.prj = prj || expense.prj;
+		expense.frmDate = frmDate || expense.frmDate;
+		expense.toDate = toDate || expense.toDate;
+		expense.type = type || expense.type;
+		expense.amount = amount || expense.amount;
+		expense.totalAmount = totalAmount || expense.totalAmount;
+		expense.comment = comment || '';
+		expense.imageUrl = imageUrl || expense.imageUrl;
+
+
+		await expense.save();
+
+		res.status(201).json({ message: "Expense updated successfully" });
+	} catch (error) {
+		res.status(500).json({ message: "Server error", error });
+	}
+});
+
 router.get("/expenses", auth, async (req, res) => {
 	try {
 		const expenses = await Expenses.find();
