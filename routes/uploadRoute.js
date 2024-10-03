@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { upload, deleteFileFromBucket } = require('./upload');
+const { upload, deleteFileFromBucket, updateFileInBucket } = require('./upload');
 const Products = require('../models/Product');
 const Employee = require('../models/Employee');
 const User = require('../models/User');
@@ -59,6 +59,22 @@ router.put('/upload/:id', upload.single('image'), async (req, res) => {
   } catch (error) {
     console.error('Error updating image:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/delete-image', async (req, res) => {
+
+  const { fileUrl } = req.body;
+
+  try {
+    
+    const fileKey = fileUrl.split('/').slice(-2).join('/');
+
+    await deleteFileFromBucket(fileKey);
+
+    res.status(200).json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
   }
 });
 

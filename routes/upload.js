@@ -41,7 +41,7 @@ async function deleteFileFromBucket(fileKey) {
 
 module.exports = {
   upload,
-  deleteFileFromBucket,
+  deleteFileFromBucket
 };
 
 
