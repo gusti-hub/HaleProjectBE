@@ -18,11 +18,27 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  title: {
+  address: {
     type: String,
     required: false,
   },
-  address: {
+  city: {
+    type: String,
+    required: false,
+  },
+  state: {
+    type: String,
+    required: false,
+  },
+  zip: {
+    type: String,
+    required: false,
+  },
+  phone: {
+    type: String,
+    required: false,
+  },
+  notes: {
     type: String,
     required: false,
   },

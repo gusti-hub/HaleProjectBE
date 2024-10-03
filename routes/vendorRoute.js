@@ -7,19 +7,19 @@ const POs = require('../models/POs.js');
 const router = express.Router();
 
 router.post('/vendorreg', async (req, res) => {
-    const { code, name, email, title, address } = req.body;
+    const { code, name, email, pic, phone, street, city, state, zip, note } = req.body;
 
-    if (!name || !email || !code) {
-        return res.status(400).json({ message: 'Please provide code, name, email.' });
+    if (!name || !code) {
+        return res.status(400).json({ message: 'Please provide code, name' });
     }
 
     try {
-        const existingUser = await Vendor.findOne({ $or: [{ email }, { code }, { name }] });
+        const existingUser = await Vendor.findOne({ $or: [{ code }, { name },] });
         if (existingUser) {
-            return res.status(400).json({ message: 'Vendor with this name or email or code already exists' });
+            return res.status(400).json({ message: 'Vendor with this name or code already exists' });
         }
 
-        const newUser = new Vendor({ code, name, email, title, address });
+        const newUser = new Vendor({ code, name, email, pic, phone, street, city, state, zip, note });
         await newUser.save();
 
         res.status(201).json({ message: 'Vendor registered successfully', user: newUser });
@@ -41,7 +41,7 @@ router.get('/vendors', auth, async (req, res) => {
 
 router.put('/vendors/:id', async (req, res) => {
     const { id } = req.params;
-    const { code, name, email, title, address } = req.body;
+    const { code, name, email, pic, phone, street, city, state, zip, note } = req.body;
 
     try {
         const user = await Vendor.findById(id);
@@ -56,20 +56,18 @@ router.put('/vendors/:id', async (req, res) => {
             }
         }
 
-        if (email && email !== user.email) {
-            const existingUserWithEmail = await Vendor.findOne({ email });
-            if (existingUserWithEmail) {
-                return res.status(400).json({ message: 'Email is already used by another vendor' });
-            }
-        }
-
         const oldName = user.name;
 
-        user.code = code || user.code;
         user.name = name || user.name;
+        user.code = code || user.code;
         user.email = email || user.email;
-        user.title = title || user.title;
-        user.address = address || user.address;
+        user.pic = pic || user.pic;
+        user.phone = phone || user.phone;
+        user.street = street || user.street;
+        user.city = city || user.city;
+        user.state = state || user.state;
+        user.zip = zip || user.zip;
+        user.note = note || user.note;            
 
         await user.save();
 
@@ -83,7 +81,7 @@ router.put('/vendors/:id', async (req, res) => {
                 { vendor: oldName },
                 { $set: { vendor: name } }
             );
-        };
+        };        
 
         res.status(200).json({ message: 'Vendor updated successfully', user });
     } catch (error) {
@@ -116,8 +114,8 @@ router.delete('/vendors/:id', async (req, res) => {
 
 router.get('/getvendornames', auth, async (req, res) => {
     try {
-        const vendors = await Vendor.find({}, 'name');
         res.status(200).json(vendors);
+        const vendors = await Vendor.find({}, 'name');
     } catch (error) {
         console.error('Error fetching vendors:', error);
         res.status(500).json({ message: 'Server error' });

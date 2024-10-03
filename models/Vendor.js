@@ -11,17 +11,37 @@ const vendorSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
   },
-  title: {
+  pic: {
     type: String,
     required: false,
   },
-  address: {
+  phone: {
     type: String,
     required: false,
   },
+  street: {
+    type: String,
+    required: false,
+  }, 
+  city: {
+    type: String,
+    required: false,
+  },    
+  state: {
+    type: String,
+    required: false,
+  }, 
+  zip: {
+    type: String,
+    required: false,
+  },  
+  note: {
+    type: String,
+    required: false,
+  },          
 });
 
 const Vendor = mongoose.model('Vendor', vendorSchema);
