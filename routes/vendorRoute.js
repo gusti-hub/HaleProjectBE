@@ -114,8 +114,8 @@ router.delete('/vendors/:id', async (req, res) => {
 
 router.get('/getvendornames', auth, async (req, res) => {
     try {
-        res.status(200).json(vendors);
         const vendors = await Vendor.find({}, 'name');
+        res.status(200).json(vendors);
     } catch (error) {
         console.error('Error fetching vendors:', error);
         res.status(500).json({ message: 'Server error' });
