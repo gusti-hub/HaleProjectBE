@@ -42,6 +42,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  oppStatus: {
+    type: String,
+    required: false,
+  },
+  oppStage: {
+    type: String,
+    required: false,
+  },
   imageUrl: { type: String }
 });
 

@@ -85,7 +85,6 @@ router.post('/signin', async (req, res) => {
     }
 });
 
-
 // Client data
 router.get('/clients', auth, async (req, res) => {
     try {
@@ -190,5 +189,46 @@ router.get('/getclientnames', auth, async (req, res) => {
     }
 });
 
+router.put('/update-opportunity-status/:id', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    try {
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.oppStatus = status || user.oppStatus;
+
+        await user.save();
+
+        res.status(200).json({ message: 'Opportunity status updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.put('/update-opportunity-stage/:id', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    try {
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.oppStage = status || user.oppStage;
+
+        await user.save();
+
+        res.status(200).json({ message: 'Opportunity stage updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
 
 module.exports = router;
