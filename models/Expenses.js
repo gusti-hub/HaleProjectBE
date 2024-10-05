@@ -2,8 +2,7 @@ const mongoose = require('mongoose');
 
 const expensesSchema = new mongoose.Schema({
     prj: { type: String, required: true },
-    frmDate: { type: String, required: true },
-    toDate: { type: String, required: true },
+    date: { type: String, required: true },
     type: { type: String, required: true },
     amount: { type: Number, required: true },
     totalAmount: { type: Number, required: true },

@@ -101,10 +101,10 @@ router.put('/times/:userId', async (req, res) => {
 });
 
 router.post("/add-expense", async (req, res) => {
-	const { prj, frmDate, toDate, type, amount, totalAmount, comment, imageUrl, docid, user } =
+	const { prj, date, type, amount, totalAmount, comment, imageUrl, docid, user } =
 		req.body;
 
-	if (!prj || !frmDate || !toDate || !type || !amount || !totalAmount) {
+	if (!prj || !date || !type || !amount || !totalAmount) {
 		return res
 			.status(400)
 			.json({ message: "Please provide all the mandatory details." });
@@ -113,8 +113,7 @@ router.post("/add-expense", async (req, res) => {
 	try {
 		const newExpense = new Expenses({
 			prj,
-			frmDate,
-			toDate,
+			date,
 			type,
 			amount,
 			totalAmount,
@@ -141,11 +140,11 @@ router.post("/add-expense", async (req, res) => {
 
 
 router.put("/update-expense/:id", async (req, res) => {
-	const { prj, frmDate, toDate, type, amount, totalAmount, comment, imageUrl } = req.body;
+	const { prj, date, type, amount, totalAmount, comment, imageUrl } = req.body;
 
 	const { id } = req.params;
 
-	if (!prj || !frmDate || !toDate || !type || !amount || !totalAmount) {
+	if (!prj || !date || !type || !amount || !totalAmount) {
 		return res
 			.status(400)
 			.json({ message: "Please provide all the mandatory details." });
@@ -159,8 +158,7 @@ router.put("/update-expense/:id", async (req, res) => {
 		}
 
 		expense.prj = prj || expense.prj;
-		expense.frmDate = frmDate || expense.frmDate;
-		expense.toDate = toDate || expense.toDate;
+		expense.date = date || expense.date;
 		expense.type = type || expense.type;
 		expense.amount = amount || expense.amount;
 		expense.totalAmount = totalAmount || expense.totalAmount;
