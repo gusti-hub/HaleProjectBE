@@ -7,10 +7,10 @@ const POs = require('../models/POs.js');
 const router = express.Router();
 
 router.post('/vendorreg', async (req, res) => {
-    const { code, name, email, pic, phone, street, city, state, zip, note } = req.body;
+    const { code, name, email, pic, phone, street, city, state, zip, note, mailAddress, siteAddress } = req.body;
 
-    if (!name || !code) {
-        return res.status(400).json({ message: 'Please provide code, name' });
+    if (!name || !code || !email) {
+        return res.status(400).json({ message: 'Please provide code, name and email.' });
     }
 
     try {
@@ -19,7 +19,7 @@ router.post('/vendorreg', async (req, res) => {
             return res.status(400).json({ message: 'Vendor with this name or code already exists' });
         }
 
-        const newUser = new Vendor({ code, name, email, pic, phone, street, city, state, zip, note });
+        const newUser = new Vendor({ code, name, email, pic, phone, street, city, state, zip, note, mailAddress, siteAddress });
         await newUser.save();
 
         res.status(201).json({ message: 'Vendor registered successfully', user: newUser });
@@ -41,7 +41,7 @@ router.get('/vendors', auth, async (req, res) => {
 
 router.put('/vendors/:id', async (req, res) => {
     const { id } = req.params;
-    const { code, name, email, pic, phone, street, city, state, zip, note } = req.body;
+    const { code, name, email, pic, phone, street, city, state, zip, note, mailAddress, siteAddress } = req.body;
 
     try {
         const user = await Vendor.findById(id);
@@ -67,7 +67,9 @@ router.put('/vendors/:id', async (req, res) => {
         user.city = city || user.city;
         user.state = state || user.state;
         user.zip = zip || user.zip;
-        user.note = note || user.note;            
+        user.note = note || user.note;          
+        user.mailAddress = mailAddress || "";
+        user.siteAddress = siteAddress || "";
 
         await user.save();
 

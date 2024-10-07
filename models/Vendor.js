@@ -41,7 +41,15 @@ const vendorSchema = new mongoose.Schema({
   note: {
     type: String,
     required: false,
-  },          
+  },    
+  mailAddress: {
+    type: String,
+    required: false,
+  }, 
+  siteAddress: {
+    type: String,
+    required: false,
+  } 
 });
 
 const Vendor = mongoose.model('Vendor', vendorSchema);

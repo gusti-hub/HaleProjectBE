@@ -11,7 +11,7 @@ const router = express.Router();
 
 // Client Registration
 router.post('/clientreg', async (req, res) => {
-    const { code, name, email, password, address, city, state , zip, phone, notes  } = req.body;
+    const { code, name, email, password, address, city, state , zip, phone, notes, mailAddress, siteAddress  } = req.body;
 
     if (!name || !email || !password || !code) {
         return res.status(400).json({ message: 'Please provide code, name, email, and password' });
@@ -26,7 +26,7 @@ router.post('/clientreg', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const newUser = new User({ code, name, email, password: hashedPassword, address, city, state , zip, phone, notes });
+        const newUser = new User({ code, name, email, password: hashedPassword, address, city, state , zip, phone, notes, mailAddress, siteAddress });
         await newUser.save();
 
         res.status(201).json({ message: 'User registered successfully', user: newUser });
@@ -99,7 +99,7 @@ router.get('/clients', auth, async (req, res) => {
 //Update client
 router.put('/clients/:id', async (req, res) => {
     const { id } = req.params;
-    const { code, name, email, password, address, city, state , zip, phone, notes  } = req.body;
+    const { code, name, email, password, address, city, state , zip, phone, notes, mailAddress, siteAddress } = req.body;
 
     try {
         const user = await User.findById(id);
@@ -133,7 +133,8 @@ router.put('/clients/:id', async (req, res) => {
         user.zip = zip || user.zip;
         user.phone = phone || user.phone;
         user.notes = notes || user.notes;
-        
+        user.mailAddress = mailAddress || "";
+        user.siteAddress = siteAddress || "";
 
         if (password) {
             const salt = await bcrypt.genSalt(10);

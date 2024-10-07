@@ -50,6 +50,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  mailAddress: {
+    type: String,
+    required: false,
+  }, 
+  siteAddress: {
+    type: String,
+    required: false,
+  },
   imageUrl: { type: String }
 });
 
