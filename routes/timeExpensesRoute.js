@@ -15,19 +15,17 @@ router.get("/times/:userId", auth, async (req, res) => {
 		// Find time data for the specific user
 		let timeData = await Time.findOne({ userid: userId });
 
-		// if (!timeData) {
-		// 	// If no time data exists, create a new entry
-		// 	timeData = new Time({
-		// 		userid: userId,
-		// 		time: [], // Initialize with an empty array for time entries
-		// 	});
-		// 	await timeData.save(); // Save the new entry
-		// 	return res
-		// 		.status(201)
-		// 		.json({ message: "New time data created", timeData: [] });
-		// }
-
-		console.log("Time Data:", timeData);
+		if (!timeData) {
+			// If no time data exists, create a new entry
+			timeData = new Time({
+				userid: userId,
+				time: [], // Initialize with an empty array for time entries
+			});
+			await timeData.save(); // Save the new entry
+			return res
+				.status(201)
+				.json({ message: "New time data created", timeData: [] });
+		}
 
 		// Return only the filtered data for the projectCode
 		res.status(200).json({ timeData });
@@ -45,7 +43,9 @@ router.get("/fetch-times/:id", auth, async (req, res) => {
 		const timeData = await Time.findById(id);
 
 		if (!timeData) {
-			return res.status(404).json({ message: "No time data found for the provided ID" });
+			return res
+				.status(404)
+				.json({ message: "No time data found for the provided ID" });
 		}
 
 		// console.log("Time Data:", timeData);
@@ -58,46 +58,81 @@ router.get("/fetch-times/:id", auth, async (req, res) => {
 	}
 });
 
-// Update or create user's time data
-router.put('/times/:userId', async (req, res) => {
+router.post("/times/:userId", async (req, res) => {
 	try {
 		const { userId } = req.params;
-		const { timeEntries, docid, user } = req.body;
 
-		// Validate request
-		if (!timeEntries || !Array.isArray(timeEntries) || timeEntries.length === 0) {
-			return res.status(400).json({ message: 'No time entries provided' });
-		}
+		const { payload } = req.body;
 
-		// Create a new time entry document with multiple days
 		const newTimeEntry = new Time({
 			userid: userId,
-			time: timeEntries.map(entry => ({
-				date: new Date(entry.date),
-				projects: entry.projects.map(project => ({
-					projectCode: project.code,
-					hours: project.hours,
-				}))
-			})),
+			time: payload.timeEntries,
+			comment: payload.comment || "",
 		});
 
-		// Save the new time entry to the database
+		// console.log(newTimeEntry);
+
 		await newTimeEntry.save();
 
 		const newDoc = new TimeNExpense({
-			docid,
+			docid: payload.docid,
 			teid: newTimeEntry._id.toString(),
-			user,
-			type: 'Time'
+			user: payload.user,
+			type: "Time",
 		});
 
-		await newDoc.save();		
+		await newDoc.save();
 
-		res.status(200).json({ message: 'New time entry created successfully', newTimeEntry });
+		res.status(200).json({ message: "Time entry updated successfully" });
 	} catch (error) {
-		console.error('Error saving time entry:', error);
-		res.status(500).json({ message: 'Server error' });
+		console.error("Error updating time data:", error);
+		res.status(500).json({ message: "Server error" });
 	}
+});
+
+// Update or create user's time data
+router.put("/times/:Id", async (req, res) => {
+  try {
+	const { Id } = req.params;
+	const { timeData, comment } = req.body;
+
+	for (let entry of timeData) {
+	  const date = new Date(entry.date);
+
+	  let existingEntry = await Time.findOne({
+		_id: Id,
+		"time.date": date,
+	  });
+
+	  if (existingEntry) {
+		await Time.findOneAndUpdate(
+		  { _id: Id, "time.date": date },
+		  {
+			$set: {
+			  "time.$.projects": entry.projects,
+			  "time.$.date": date,
+			  comment: comment || "",
+			},
+		  },
+		  { new: true }
+		);
+	  } else {
+		await Time.findOneAndUpdate(
+		  { _id: Id },
+		  {
+			$push: { time: { date, projects: entry.projects } }, 
+			$set: { comment: comment || "" },
+		  },
+		  { new: true, upsert: true } 
+		);
+	  }
+	}
+
+	res.status(200).json({ message: "Time entry updated successfully" });
+  } catch (error) {
+	console.error("Error updating time data:", error);
+	res.status(500).json({ message: "Server error" });
+  }
 });
 
 router.post("/add-expense", async (req, res) => {
