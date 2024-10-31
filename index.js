@@ -17,6 +17,7 @@ const teRoutes = require('./routes/timeExpensesRoute');
 
 const uploadRoutes = require('./routes/uploadRoute');
 const configurationRoutes = require('./routes/configurationRoute');
+const dashboardRoutes = require('./routes/dashboardRoute');
 
 const PORT = process.env.PORT || 5000;
 
@@ -44,6 +45,7 @@ app.use('/api', teRoutes);
 app.use('/api', uploadRoutes);
 app.use('/api', roleRoutes);
 app.use('/api', configurationRoutes);
+app.use('/api', dashboardRoutes);
 
 app.get('/api/roleOptions', (req, res) => {
     const options = [
