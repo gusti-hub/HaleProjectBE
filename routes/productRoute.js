@@ -1,6 +1,7 @@
 const express = require('express');
 const Products = require('../models/Product.js');
 const Sections = require('../models/Section.js');
+const Proposal = require('../models/Proposal.js');
 const auth = require('../utils/jwtUtils.js');
 const DOCs = require('../models/DOCs.js');
 const InPdts = require('../models/InPdts.js');
@@ -20,6 +21,33 @@ const router = express.Router();
 //         res.status(500).json({ message: 'Server error', error });
 //     }
 // });
+
+router.get('/getproposals/:projectId', auth, async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const proposalData = await Proposal.find({ projectId });
+        res.status(200).json({ proposalData });
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+router.post('/addProposal', async (req, res) => {
+    try {
+        const { projectId, proposalName } = req.body;
+
+        const newProposal = new Proposal({
+            projectId, proposalName
+        });
+
+        await newProposal.save();
+
+        res.status(201).json({ message: "Proposal is added." });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+})
 
 router.get('/allpdts', auth, async (req, res) => {
     try {
